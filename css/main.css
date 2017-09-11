@@ -1074,7 +1074,7 @@ pre .javascript .function {
   bottom: 19px;
 }
 .header {
-  background: transparent;
+  background: url("/Users/huchengyang/Documents/disk1/blog/themes/next/source/images/background.jpg");
 }
 .header-inner {
   position: relative;
@@ -1818,7 +1818,7 @@ pre .javascript .function {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #14ff3e;
+  background: #16fbff;
 }
 .links-of-blogroll {
   font-size: 13px;
@@ -2654,4 +2654,11 @@ embed {
 }
 .links-of-blogroll-inline .links-of-blogroll-item {
   display: inline-block;
+}
+.post-copyright {
+  margin: 2em 0 0;
+  padding: 0.5em 1em;
+  border-left: 3px solid #ff1700;
+  background-color: #f9f9f9;
+  list-style: none;
 }
