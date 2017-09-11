@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="概述Launcher在AndroidManifest.xml中加入了category.home属性，因此开机的时候最先找到这个应用程序加载 1&amp;lt;category android:name=&amp;quot;android.intent.category.HOME&amp;quot; /&amp;gt; 和普通的应用程序一样，先从onCreate()开始分析 准备工作12LauncherAppState.setAp">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Launcher加载流程">
+<meta property="og:url" content="http://yoursite.com/2016/01/03/Launcher加载流程/index.html">
+<meta property="og:site_name" content="HuYounger&#39;s Note">
+<meta property="og:description" content="概述Launcher在AndroidManifest.xml中加入了category.home属性，因此开机的时候最先找到这个应用程序加载 1&amp;lt;category android:name=&amp;quot;android.intent.category.HOME&amp;quot; /&amp;gt; 和普通的应用程序一样，先从onCreate()开始分析 准备工作12LauncherAppState.setAp">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/launcherdb.PNG">
+<meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/LauncherSequence.png">
+<meta property="og:updated_time" content="2017-09-10T13:41:18.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Launcher加载流程">
+<meta name="twitter:description" content="概述Launcher在AndroidManifest.xml中加入了category.home属性，因此开机的时候最先找到这个应用程序加载 1&amp;lt;category android:name=&amp;quot;android.intent.category.HOME&amp;quot; /&amp;gt; 和普通的应用程序一样，先从onCreate()开始分析 准备工作12LauncherAppState.setAp">
+<meta name="twitter:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/launcherdb.PNG">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/01/03/Launcher加载流程/"/>
+
+
+
+
+
+  <title>Launcher加载流程 | HuYounger's Note</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">HuYounger's Note</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/01/03/Launcher加载流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="HuYounger">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://7xjvg5.com1.z0.glb.clouddn.com/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HuYounger's Note">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Launcher加载流程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-01-03T00:00:00+08:00">
+                2016-01-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2016/01/03/Launcher加载流程/" class="leancloud_visitors" data-flag-title="Launcher加载流程">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><strong>Launcher</strong>在AndroidManifest.xml中加入了<strong>category.home</strong>属性，因此开机的时候最先找到这个应用程序加载</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;category android:name=&quot;android.intent.category.HOME&quot; /&gt;</div></pre></td></tr></table></figure>
+<p>和普通的应用程序一样，先从<strong>onCreate()</strong>开始分析</p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">LauncherAppState.setApplicationContext(getApplicationContext());</div><div class="line">LauncherAppState app = LauncherAppState.getInstance();</div></pre></td></tr></table></figure>
+<p>这里先获取到<strong>LauncherAppState</strong>的一个实例(单例模式)，在该实例的构造函数中对许多变量进行了初始化同时注册了广播监听</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">mInvariantDeviceProfile = new InvariantDeviceProfile(sContext);//一些不变的设备相关参数管理类，其内部包涵了横竖屏模式的DeviceProfile</div><div class="line">mIconCache = new IconCache(sContext, mInvariantDeviceProfile);//图标缓存类，应用程序icon和title的缓存</div><div class="line">mWidgetCache = new WidgetPreviewLoader(sContext, mIconCache);//小部件缓存</div><div class="line"></div><div class="line">mAppFilter = AppFilter.loadByName(sContext.getString(R.string.app_filter_class));</div><div class="line">mBuildInfo = BuildInfo.loadByName(sContext.getString(R.string.build_info_class));</div><div class="line">mModel = new LauncherModel(this, mIconCache, mAppFilter);//数据处理类，保存桌面状态，提供读写数据库的API，内部类LoaderTask用来初始化桌面</div><div class="line"></div><div class="line">LauncherAppsCompat.getInstance(sContext).addOnAppsChangedCallback(mModel);</div><div class="line"></div><div class="line">// Register intent receivers</div><div class="line">IntentFilter filter = new IntentFilter();</div><div class="line">filter.addAction(Intent.ACTION_LOCALE_CHANGED);//如中英文的切换</div><div class="line">filter.addAction(SearchManager.INTENT_GLOBAL_SEARCH_ACTIVITY_CHANGED);//搜索提供者发生了变化</div><div class="line">filter.addAction(SearchManager.INTENT_ACTION_SEARCHABLES_CHANGED);</div><div class="line">// For handling managed profiles</div><div class="line">filter.addAction(LauncherAppsCompat.ACTION_MANAGED_PROFILE_ADDED);</div><div class="line">filter.addAction(LauncherAppsCompat.ACTION_MANAGED_PROFILE_REMOVED);</div><div class="line"></div><div class="line">sContext.registerReceiver(mModel, filter);</div><div class="line">UserManagerCompat.getInstance(sContext).enableAndResetCache();</div><div class="line"></div><div class="line">filter = new IntentFilter();</div><div class="line">if (Utilities.isUnreadCountEnabled(sContext)) &#123;</div><div class="line">    filter.addAction(LauncherModel.ACTION_UNREAD_CHANGED);//未读广播</div><div class="line">    sContext.registerReceiver(mModel, filter);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里贴的是CM的Launcher而并非原生,CM基于原生做了一些定制,例如这里的未读广播,系统中的其他应用可以通过向Launcher发送该广播,提醒Launcher更新桌面的应用图标,显示未读数量.<br>继续回到Launcher的onCreate()方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">mDeviceProfile = getResources().getConfiguration().orientation</div><div class="line">                == Configuration.ORIENTATION_LANDSCAPE ?</div><div class="line">                        app.getInvariantDeviceProfile().landscapeProfile</div><div class="line">                            : app.getInvariantDeviceProfile().portraitProfile;</div></pre></td></tr></table></figure>
+<p>这里获取到一个InvariantDeviceProfile对象,可以把该对象理解成手机的具体配置信息,在InvariantDeviceProfile类中保存了市面上主流的一些手机屏幕的大小,以及默认的布局格式,例如几行几列,应用图标的大小,字体大小等等,Launcher会从中选择一块最接近当前手机的屏幕大小,加载默认的配置文件,具体之后再分析.</p>
+<p>接着获取一些在LauncherAppState中初始化过的重要对象后:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">setContentView(R.layout.launcher);</div><div class="line">setupViews();</div><div class="line">mDeviceProfile.layout(this);</div></pre></td></tr></table></figure>
+<p>Launcher也是一个Activity,也需要加载布局,在layout-land和layout-port中都存在launcher.xml分别对应横屏和竖屏,在使用android平板或者屏幕很大的时候会用到横屏,这里我们就分析平时常用的竖屏的情况,Launcher中自定义了很多View,代码量都很多.在setupViews()中就是对布局中的控件各种findViewById,注册点击事件,还有拖拽事件(DragController);mDeviceProfile.layout(this)中根据之前InvariantDeviceProfile找到的最适合的一块手机屏幕确定布局中的控件的位置</p>
+<ul>
+<li>Layout the search bar space(确定搜索框)</li>
+<li>Layout the workspace(确定桌面,中间可以左右滑动的那块)</li>
+<li>Layout the hotseat(确定热键区域)</li>
+<li>Layout the page indicators(确定桌面指示的那个小点)</li>
+<li>Layout the Overview Mode(确定长按进入的预览模式)</li>
+</ul>
+<p>接下来就是采用异步的方式加载和绑定桌面和菜单里的应用、小部件、文件夹等,Launcher的加载流程也就是从这里开始</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">if (!mRestoring) &#123;</div><div class="line">    if (DISABLE_SYNCHRONOUS_BINDING_CURRENT_PAGE) &#123;</div><div class="line">        // If the user leaves launcher, then we should just load items asynchronously when</div><div class="line">        // they return.</div><div class="line">        mModel.startLoader(PagedView.INVALID_RESTORE_PAGE);</div><div class="line">    &#125; else &#123;</div><div class="line">        // We only load the page synchronously if the user rotates (or triggers a</div><div class="line">        // configuration change) while launcher is in the foreground</div><div class="line">        mModel.startLoader(mWorkspace.getRestorePage());</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>第一次启动时提示视图</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">    if (shouldShowIntroScreen()) &#123;</div><div class="line">        showIntroScreen();</div><div class="line">    &#125; else &#123;</div><div class="line">        showFirstRunActivity();</div><div class="line">        showFirstRunClings();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="数据的加载和绑定"><a href="#数据的加载和绑定" class="headerlink" title="数据的加载和绑定"></a>数据的加载和绑定</h2><p>之前说了Launcher的数据加载和绑定的流程是从LauncherModel的startLoader开始的,因此这里重点开始分析这一流程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">code path:/packages/apps/Launcher3/src/com/android/launcher3/LauncherModel.java</div><div class="line">    public void startLoader(int synchronousBindPage, int loadFlags) &#123;</div><div class="line">        // Enable queue before starting loader. It will get disabled in Launcher#finishBindingItems</div><div class="line">        InstallShortcutReceiver.enableInstallQueue();</div><div class="line">        synchronized (mLock) &#123;</div><div class="line">            // Clear any deferred bind-runnables from the synchronized load process</div><div class="line">            // We must do this before any loading/binding is scheduled below.</div><div class="line">            synchronized (mDeferredBindRunnables) &#123;</div><div class="line">                mDeferredBindRunnables.clear();</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            // Don&apos;t bother to start the thread if we know it&apos;s not going to do anything</div><div class="line">            if (mCallbacks != null &amp;&amp; mCallbacks.get() != null) &#123;</div><div class="line">                // If there is already one running, tell it to stop.</div><div class="line">                stopLoaderLocked();</div><div class="line">                mLoaderTask = new LoaderTask(mApp.getContext(), loadFlags);</div><div class="line">                if (synchronousBindPage != PagedView.INVALID_RESTORE_PAGE</div><div class="line">                        &amp;&amp; mAllAppsLoaded &amp;&amp; mWorkspaceLoaded &amp;&amp; !mIsLoaderTaskRunning) &#123;</div><div class="line">                    mLoaderTask.runBindSynchronousPage(synchronousBindPage);</div><div class="line">                &#125; else &#123;</div><div class="line">                    sWorkerThread.setPriority(Thread.NORM_PRIORITY);</div><div class="line">                    sWorker.post(mLoaderTask);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>这里的mLoaderTask是LauncherModel的内部类,实现了Runnable,第一次开机的时候条件判断执行上面的else中的代码,走到LoaderTask中执行run()方法:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line">public void run() &#123;</div><div class="line">    synchronized (mLock) &#123;</div><div class="line">        if (mStopped) &#123;</div><div class="line">            return;</div><div class="line">        &#125;</div><div class="line">        mIsLoaderTaskRunning = true;</div><div class="line">    &#125;</div><div class="line">    // Optimize for end-user experience: if the Launcher is up and // running with the</div><div class="line">    // All Apps interface in the foreground, load All Apps first. Otherwise, load the</div><div class="line">    // workspace first (default).</div><div class="line">    keep_running: &#123;</div><div class="line">        if (DEBUG_LOADERS) Log.d(TAG, &quot;step 1: loading workspace&quot;);</div><div class="line">        loadAndBindWorkspace();</div><div class="line"></div><div class="line">        if (mStopped) &#123;</div><div class="line">            break keep_running;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        waitForIdle();</div><div class="line"></div><div class="line">        // second step</div><div class="line">        if (DEBUG_LOADERS) Log.d(TAG, &quot;step 2: loading all apps&quot;);</div><div class="line">        loadAndBindAllApps();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // Clear out this reference, otherwise we end up holding it until all of the</div><div class="line">    // callback runnables are done.</div><div class="line">    mContext = null;</div><div class="line"></div><div class="line">    synchronized (mLock) &#123;</div><div class="line">        // If we are still the last one to be scheduled, remove ourselves.</div><div class="line">        if (mLoaderTask == this) &#123;</div><div class="line">            mLoaderTask = null;</div><div class="line">        &#125;</div><div class="line">        mIsLoaderTaskRunning = false;</div><div class="line">        mHasLoaderCompletedOnce = true;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里分为两个步骤:</p>
+<ul>
+<li>loadAndBindWorkspace(); //加载和绑定桌面</li>
+<li>loadAndBindAllApps();//加载和绑定菜单</li>
+</ul>
+<p>先分析桌面上数据的加载和绑定</p>
+<h2 id="loadAndBindWorkspace"><a href="#loadAndBindWorkspace" class="headerlink" title="loadAndBindWorkspace()"></a>loadAndBindWorkspace()</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">private void loadAndBindWorkspace() &#123;</div><div class="line">    mIsLoadingAndBindingWorkspace = true;</div><div class="line"></div><div class="line">    // Load the workspace</div><div class="line">    if (DEBUG_LOADERS) &#123;</div><div class="line">        Log.d(TAG, &quot;loadAndBindWorkspace mWorkspaceLoaded=&quot; + mWorkspaceLoaded);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    if (!mWorkspaceLoaded) &#123;</div><div class="line">        loadWorkspace();</div><div class="line">        synchronized (LoaderTask.this) &#123;</div><div class="line">            if (mStopped) &#123;</div><div class="line">                return;</div><div class="line">            &#125;</div><div class="line">            mWorkspaceLoaded = true;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // Bind the workspace</div><div class="line">    bindWorkspace(-1);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>桌面上数据分为加载和绑定:</p>
+<ul>
+<li>loadWorkspace() //加载和绑定桌面</li>
+<li>bindWorkspace(-1)//加载和绑定菜单</li>
+</ul>
+<h2 id="loadWorkspace"><a href="#loadWorkspace" class="headerlink" title="loadWorkspace()"></a>loadWorkspace()</h2><p>第一次开机时launcher的数据库为空，因此要加载默认的配置文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">LauncherAppState.getLauncherProvider().loadDefaultFavoritesIfNecessary();</div></pre></td></tr></table></figure>
+<p>查看loadDefaultFavoritesIfNecessary()中是如何加载默认配置:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div></pre></td><td class="code"><pre><div class="line">synchronized public void loadDefaultFavoritesIfNecessary() &#123;</div><div class="line">        String spKey = LauncherAppState.getSharedPreferencesKey();</div><div class="line">        SharedPreferences sp = getContext().getSharedPreferences(spKey, Context.MODE_PRIVATE);</div><div class="line"></div><div class="line">        if (sp.getBoolean(EMPTY_DATABASE_CREATED, false)) &#123;</div><div class="line">            Log.d(TAG, &quot;loading default workspace&quot;);</div><div class="line"></div><div class="line">            AutoInstallsLayout loader = createWorkspaceLoaderFromAppRestriction();</div><div class="line">            if (loader == null) &#123;</div><div class="line">                loader = AutoInstallsLayout.get(getContext(),</div><div class="line">                        mOpenHelper.mAppWidgetHost, mOpenHelper);</div><div class="line">            &#125;</div><div class="line">            if (loader == null) &#123;</div><div class="line">                final Partner partner = Partner.get(getContext().getPackageManager());</div><div class="line">                if (partner != null &amp;&amp; partner.hasDefaultLayout()) &#123;</div><div class="line">                    final Resources partnerRes = partner.getResources();</div><div class="line">                    int workspaceResId = partnerRes.getIdentifier(Partner.RES_DEFAULT_LAYOUT,</div><div class="line">                            &quot;xml&quot;, partner.getPackageName());</div><div class="line">                    if (workspaceResId != 0) &#123;</div><div class="line">                        loader = new DefaultLayoutParser(getContext(), mOpenHelper.mAppWidgetHost,</div><div class="line">                                mOpenHelper, partnerRes, workspaceResId);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            final boolean usingExternallyProvidedLayout = loader != null;</div><div class="line">            if (loader == null) &#123;</div><div class="line">                loader = getDefaultLayoutParser();</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            // There might be some partially restored DB items, due to buggy restore logic in</div><div class="line">            // previous versions of launcher.</div><div class="line">            createEmptyDB();</div><div class="line">            // Populate favorites table with initial favorites</div><div class="line">            if ((mOpenHelper.loadFavorites(mOpenHelper.getWritableDatabase(), loader) &lt;= 0)</div><div class="line">                    &amp;&amp; usingExternallyProvidedLayout) &#123;</div><div class="line">                // Unable to load external layout. Cleanup and load the internal layout.</div><div class="line">                createEmptyDB();</div><div class="line">                mOpenHelper.loadFavorites(mOpenHelper.getWritableDatabase(),</div><div class="line">                        getDefaultLayoutParser());</div><div class="line">            &#125;</div><div class="line">            clearFlagEmptyDbCreated();</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>首先获取布局加载器loader对默认的布局进行加载，调用DatabaseHelper的loadFavorites方法加载默认的布局文件(default_workspace.xml)。回到loadworkspace()中，这个方法的代码很多，但是基本思路很清晰，在default_workspace.xml中我们自定义了一些要在桌面上显示的ShortcutInfo，这里的ShortcutInfo包括快捷方式、小部件、文件夹等，它们所在的区域可能在中间(CONTAINER_DESKTOP),也可能在热键区(CONTAINER_HOTSEAT)，这里的工作就是遍历所有之前默认配置文件中的内容，保存在对应的数据结构中，完善数据库表。最终结果可以导出launcher.db查看：</p>
+<p>​    <img src="http://7xjvg5.com1.z0.glb.clouddn.com/launcherdb.PNG"></p>
+<p>数据库中有数据了，接下来就是要将数据库中的内容绑定到桌面上</p>
+<h2 id="bindworkspace"><a href="#bindworkspace" class="headerlink" title="bindworkspace()"></a>bindworkspace()</h2><p>首先获取在loadworkspace()方法中保存在数据结构里的数据，然后对这些数据进行过滤，区分出当前屏幕的数据和其他屏幕的数据。之后就正式进入数据绑定流程。</p>
+<ul>
+<li>startBinding()</li>
+<li>bindworkspaceScreens();</li>
+<li>bindworkspaceItems()</li>
+<li>finishBindingItems()</li>
+</ul>
+<p>这些方法都是回调Launcher中对应方法完成的先看startBinding:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">public void startBinding() &#123;</div><div class="line">        setWorkspaceLoading(true);</div><div class="line"></div><div class="line">        // If we&apos;re starting binding all over again, clear any bind calls we&apos;d postponed in</div><div class="line">        // the past (see waitUntilResume) -- we don&apos;t need them since we&apos;re starting binding</div><div class="line">        // from scratch again</div><div class="line">        mBindOnResumeCallbacks.clear();</div><div class="line"></div><div class="line">        // Clear the workspace because it&apos;s going to be rebound</div><div class="line">        mWorkspace.clearDropTargets();</div><div class="line">        mWorkspace.removeAllWorkspaceScreens();</div><div class="line"></div><div class="line">        mWidgetsToAdvance.clear();</div><div class="line">        if (mHotseat != null) &#123;</div><div class="line">            mHotseat.resetLayout();</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>就是一些准备绑定前的准备工作，接着看bindworkspaceScreens，该方法会回调Launcher的bindScreens()，既然要把应用绑定到桌面上，起码要先把桌面确定下来吧：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">public void bindScreens(ArrayList&lt;Long&gt; orderedScreenIds) &#123;</div><div class="line">    bindAddScreens(orderedScreenIds);</div><div class="line"></div><div class="line">    // If there are no screens, we need to have an empty screen</div><div class="line">    if (orderedScreenIds.size() == 0) &#123;</div><div class="line">        mWorkspace.addExtraEmptyScreen();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    // 用户使用有自定义的屏幕</div><div class="line">    if (hasCustomContentToLeft()) &#123;</div><div class="line">        mWorkspace.createCustomContentContainer();</div><div class="line">        populateCustomContentContainer();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里的bindAddScreens()方法就是创建屏幕:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">public void bindAddScreens(ArrayList&lt;Long&gt; orderedScreenIds) &#123;</div><div class="line">      int count = orderedScreenIds.size();</div><div class="line">      for (int i = 0; i &lt; count; i++) &#123;</div><div class="line">          mWorkspace.insertNewWorkspaceScreenBeforeEmptyScreen(orderedScreenIds.get(i));</div><div class="line">      &#125;</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+<p>屏幕确定下来，可以开始绑定了。</p>
+<h2 id="bindworkspaceItems"><a href="#bindworkspaceItems" class="headerlink" title="bindworkspaceItems()"></a>bindworkspaceItems()</h2><p>这里的绑定也没那么纯粹，前面说了会将要绑定的内容分为当前屏幕以及其他屏幕，为了创造好的用户体验，先绑定当前屏幕，再绑定其他屏幕。根据数据的不同，分别回调到Launcehr中的binditem()，bindfolder，bindwidget.就已item为例分析，其他类似：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div></pre></td><td class="code"><pre><div class="line">public void bindItems(final ArrayList&lt;ItemInfo&gt; shortcuts, final int start, final int end,</div><div class="line">                         final boolean forceAnimateIcons) &#123;</div><div class="line">       Runnable r = new Runnable() &#123;</div><div class="line">           public void run() &#123;</div><div class="line">               bindItems(shortcuts, start, end, forceAnimateIcons);</div><div class="line">           &#125;</div><div class="line">       &#125;;</div><div class="line">       if (waitUntilResume(r)) &#123;</div><div class="line">           return;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       // Get the list of added shortcuts and intersect them with the set of shortcuts here</div><div class="line">       final AnimatorSet anim = LauncherAnimUtils.createAnimatorSet();</div><div class="line">       final Collection&lt;Animator&gt; bounceAnims = new ArrayList&lt;Animator&gt;();</div><div class="line">       final boolean animateIcons = forceAnimateIcons &amp;&amp; canRunNewAppsAnimation();</div><div class="line">       Workspace workspace = mWorkspace;</div><div class="line">       long newShortcutsScreenId = -1;</div><div class="line">       for (int i = start; i &lt; end; i++) &#123;</div><div class="line">           final ItemInfo item = shortcuts.get(i);</div><div class="line"></div><div class="line">           // Short circuit if we are loading dock items for a configuration which has no dock</div><div class="line">           if (item.container == LauncherSettings.Favorites.CONTAINER_HOTSEAT &amp;&amp;</div><div class="line">                   mHotseat == null) &#123;</div><div class="line">               continue;</div><div class="line">           &#125;</div><div class="line"></div><div class="line">           switch (item.itemType) &#123;</div><div class="line">               //如果是快捷方式或者应用</div><div class="line">               case LauncherSettings.Favorites.ITEM_TYPE_APPLICATION:</div><div class="line">               case LauncherSettings.Favorites.ITEM_TYPE_SHORTCUT:</div><div class="line">                   ShortcutInfo info = (ShortcutInfo) item;</div><div class="line">                   //生成图标</div><div class="line">                   View shortcut = createShortcut(info);</div><div class="line"></div><div class="line">                   /*</div><div class="line">                    * TODO: FIX collision case</div><div class="line">                    */</div><div class="line">                    //如果在desktop区域，进行位置冲突判断</div><div class="line">                   if (item.container == LauncherSettings.Favorites.CONTAINER_DESKTOP) &#123;</div><div class="line">                       CellLayout cl = mWorkspace.getScreenWithId(item.screenId);</div><div class="line">                       if (cl != null &amp;&amp; cl.isOccupied(item.cellX, item.cellY)) &#123;</div><div class="line">                           View v = cl.getChildAt(item.cellX, item.cellY);</div><div class="line">                           Object tag = v.getTag();</div><div class="line">                           String desc = &quot;Collision while binding workspace item: &quot; + item</div><div class="line">                                   + &quot;. Collides with &quot; + tag;</div><div class="line">                           if (LauncherAppState.isDogfoodBuild()) &#123;</div><div class="line">                               throw (new RuntimeException(desc));</div><div class="line">                           &#125; else &#123;</div><div class="line">                               Log.d(TAG, desc);</div><div class="line">                           &#125;</div><div class="line">                       &#125;</div><div class="line">                   &#125;</div><div class="line">					//对应的坐标位置都确定了，添加到桌面上</div><div class="line">                   workspace.addInScreenFromBind(shortcut, item.container, item.screenId, item.cellX,</div><div class="line">                           item.cellY, 1, 1);</div><div class="line">                   if (animateIcons) &#123;</div><div class="line">                       // Animate all the applications up now</div><div class="line">                       shortcut.setAlpha(0f);</div><div class="line">                       shortcut.setScaleX(0f);</div><div class="line">                       shortcut.setScaleY(0f);</div><div class="line">                       bounceAnims.add(createNewAppBounceAnimation(shortcut, i));</div><div class="line">                       newShortcutsScreenId = item.screenId;</div><div class="line">                   &#125;</div><div class="line">                   break;</div><div class="line">               case LauncherSettings.Favorites.ITEM_TYPE_FOLDER:</div><div class="line">                   //如果是文件夹类型，生成文件夹图标</div><div class="line">                   FolderIcon newFolder = FolderIcon.fromXml(R.layout.folder_icon, this,</div><div class="line">                           (ViewGroup) workspace.getChildAt(workspace.getCurrentPage()),</div><div class="line">                           (FolderInfo) item, mIconCache);</div><div class="line">                   //添加到桌面上</div><div class="line">                   workspace.addInScreenFromBind(newFolder, item.container, item.screenId, item.cellX,</div><div class="line">                           item.cellY, 1, 1);</div><div class="line">                   break;</div><div class="line">               default:</div><div class="line">                   throw new RuntimeException(&quot;Invalid Item Type&quot;);</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line"></div><div class="line">       if (animateIcons) &#123;</div><div class="line">           // Animate to the correct page</div><div class="line">           if (newShortcutsScreenId &gt; -1) &#123;</div><div class="line">               long currentScreenId = mWorkspace.getScreenIdForPageIndex(mWorkspace.getNextPage());</div><div class="line">               final int newScreenIndex = mWorkspace.getPageIndexForScreenId(newShortcutsScreenId);</div><div class="line">               final Runnable startBounceAnimRunnable = new Runnable() &#123;</div><div class="line">                   public void run() &#123;</div><div class="line">                       anim.playTogether(bounceAnims);</div><div class="line">                       anim.start();</div><div class="line">                   &#125;</div><div class="line">               &#125;;</div><div class="line">               if (newShortcutsScreenId != currentScreenId) &#123;</div><div class="line">                   // We post the animation slightly delayed to prevent slowdowns</div><div class="line">                   // when we are loading right after we return to launcher.</div><div class="line">                   mWorkspace.postDelayed(new Runnable() &#123;</div><div class="line">                       public void run() &#123;</div><div class="line">                           if (mWorkspace != null) &#123;</div><div class="line">                               mWorkspace.snapToPage(newScreenIndex);</div><div class="line">                               mWorkspace.postDelayed(startBounceAnimRunnable,</div><div class="line">                                       NEW_APPS_ANIMATION_DELAY);</div><div class="line">                           &#125;</div><div class="line">                       &#125;</div><div class="line">                   &#125;, NEW_APPS_PAGE_MOVE_DELAY);</div><div class="line">               &#125; else &#123;</div><div class="line">                   mWorkspace.postDelayed(startBounceAnimRunnable, NEW_APPS_ANIMATION_DELAY);</div><div class="line">               &#125;</div><div class="line">           &#125;</div><div class="line">       &#125;</div><div class="line">       //刷新桌面</div><div class="line">       workspace.requestLayout();</div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+<h2 id="finishBinding"><a href="#finishBinding" class="headerlink" title="finishBinding()"></a>finishBinding()</h2><p>各种类型的控件都绑定完成，进入到收尾工作，主要是发送广播</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div></pre></td><td class="code"><pre><div class="line">public void finishBindingItems() &#123;</div><div class="line">        Runnable r = new Runnable() &#123;</div><div class="line">            public void run() &#123;</div><div class="line">                finishBindingItems();</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line">        if (waitUntilResume(r)) &#123;</div><div class="line">            return;</div><div class="line">        &#125;</div><div class="line">        if (mSavedState != null) &#123;</div><div class="line">            if (!mWorkspace.hasFocus()) &#123;</div><div class="line">                mWorkspace.getChildAt(mWorkspace.getCurrentPage()).requestFocus();</div><div class="line">            &#125;</div><div class="line">            mSavedState = null;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        mWorkspace.restoreInstanceStateForRemainingPages();</div><div class="line"></div><div class="line">        setWorkspaceLoading(false);</div><div class="line">        sendLoadingCompleteBroadcastIfNecessary();</div><div class="line"></div><div class="line">        // If we received the result of any pending adds while the loader was running (e.g. the</div><div class="line">        // widget configuration forced an orientation change), process them now.</div><div class="line">        if (sPendingAddItem != null) &#123;</div><div class="line">            final long screenId = completeAdd(sPendingAddItem);</div><div class="line"></div><div class="line">            // TODO: this moves the user to the page where the pending item was added. Ideally,</div><div class="line">            // the screen would be guaranteed to exist after bind, and the page would be set through</div><div class="line">            // the workspace restore process.</div><div class="line">            mWorkspace.post(new Runnable() &#123;</div><div class="line">                @Override</div><div class="line">                public void run() &#123;</div><div class="line">                    mWorkspace.snapToScreenId(screenId);</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line">            sPendingAddItem = null;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        InstallShortcutReceiver.disableAndFlushInstallQueue(this);</div><div class="line"></div><div class="line">        if (mLauncherCallbacks != null) &#123;</div><div class="line">            mLauncherCallbacks.finishBindingItems(false);</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<h2 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h2><p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/LauncherSequence.png"></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+     
+     <div>    
+      
+      <ul class="post-copyright">
+         <li class="post-copyright-link">
+          <strong>本文作者：</strong>
+          <a href="/" title="欢迎访问 HuYounger 的个人博客">HuYounger</a>
+        </li>
+        <li class="post-copyright-link">
+          <strong>本文标题：</strong>
+          <a href="http://yoursite.com/2016/01/03/Launcher加载流程/" title="Launcher加载流程">Launcher加载流程</a>
+        </li>
+        <li class="post-copyright-link">
+          <strong>本文链接：</strong>
+          <a href="http://yoursite.com/2016/01/03/Launcher加载流程/" title="Launcher加载流程">http://yoursite.com/2016/01/03/Launcher加载流程/</a>
+        </li>
+        <li class="post-copyright-date">
+            <strong>发布时间：</strong>2016年1月3日 - 00时01分
+        </li>  
+        <li class="post-copyright-license">
+          <strong>版权声明： </strong>
+          本文由 HuYounger 原创，采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh" rel="license" target="_blank">保留署名-非商业性使用-禁止演绎 4.0-国际许可协议</a> </br>转载请保留以上声明信息！
+        </li>
+      </ul>
+    
+  </div>
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/01/01/初识Launcher/" rel="next" title="初识Launcher">
+                <i class="fa fa-chevron-left"></i> 初识Launcher
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/01/13/Launcher Package变化监听机制(一)/" rel="prev" title="Launcher Package变化监听机制(一)">
+                Launcher Package变化监听机制(一) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          
+            <img class="site-author-image" itemprop="image"
+              src="http://7xjvg5.com1.z0.glb.clouddn.com/avatar.jpeg"
+              alt="HuYounger" />
+          
+            <p class="site-author-name" itemprop="name">HuYounger</p>
+            <p class="site-description motion-element" itemprop="description">Less is more</p>
+        </div>
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives/">
+            
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/Rkhcy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>GitHub</a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#准备工作"><span class="nav-number">2.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据的加载和绑定"><span class="nav-number">3.</span> <span class="nav-text">数据的加载和绑定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#loadAndBindWorkspace"><span class="nav-number">4.</span> <span class="nav-text">loadAndBindWorkspace()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#loadWorkspace"><span class="nav-number">5.</span> <span class="nav-text">loadWorkspace()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bindworkspace"><span class="nav-number">6.</span> <span class="nav-text">bindworkspace()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bindworkspaceItems"><span class="nav-number">7.</span> <span class="nav-text">bindworkspaceItems()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#finishBinding"><span class="nav-number">8.</span> <span class="nav-text">finishBinding()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#流程图"><span class="nav-number">9.</span> <span class="nav-text">流程图</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 &mdash; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">HuYounger</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.2</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("rcy0CA7vKecGb0eQxcnHdO3i-gzGzoHsz", "N9PBf4dqgEeMJL7klXsAli0a");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

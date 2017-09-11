@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="概述平时使用的ViewGroup或View等控件都是包含在Activity中，那么它们三者事件分发顺序又是怎样的？ 例子MainActivity.java 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android Activity事件分发机制">
+<meta property="og:url" content="http://yoursite.com/2017/04/28/Android Activity事件分发机制/index.html">
+<meta property="og:site_name" content="HuYounger&#39;s Note">
+<meta property="og:description" content="概述平时使用的ViewGroup或View等控件都是包含在Activity中，那么它们三者事件分发顺序又是怎样的？ 例子MainActivity.java 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/989851-eafe6ca9ebbf7131.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/989851-c8114f19d488bdaf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2017-09-10T15:29:38.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android Activity事件分发机制">
+<meta name="twitter:description" content="概述平时使用的ViewGroup或View等控件都是包含在Activity中，那么它们三者事件分发顺序又是怎样的？ 例子MainActivity.java 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/989851-eafe6ca9ebbf7131.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/04/28/Android Activity事件分发机制/"/>
+
+
+
+
+
+  <title>Android Activity事件分发机制 | HuYounger's Note</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">HuYounger's Note</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/28/Android Activity事件分发机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="HuYounger">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://7xjvg5.com1.z0.glb.clouddn.com/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HuYounger's Note">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android Activity事件分发机制</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-28T00:00:00+08:00">
+                2017-04-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/04/28/Android Activity事件分发机制/" class="leancloud_visitors" data-flag-title="Android Activity事件分发机制">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>平时使用的ViewGroup或View等控件都是包含在Activity中，那么它们三者事件分发顺序又是怎样的？</p>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>MainActivity.java</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div></pre></td><td class="code"><pre><div class="line">public class MainActivity extends AppCompatActivity implements View.OnClickListener,View.OnTouchListener &#123;</div><div class="line"></div><div class="line">    private MyLayout myLayout;</div><div class="line">    private MyView myView;</div><div class="line">    @Override</div><div class="line">    protected void onCreate(Bundle savedInstanceState) &#123;</div><div class="line">        super.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        myLayout = (MyLayout) findViewById(R.id.my_layout);</div><div class="line">        myView = (MyView) findViewById(R.id.my_view);</div><div class="line"></div><div class="line">        myLayout.setOnClickListener(this);</div><div class="line">        myLayout.setOnTouchListener(this);</div><div class="line"></div><div class="line">        myView.setOnClickListener(this);</div><div class="line">        myView.setOnTouchListener(this);</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public void onClick(View v) &#123;</div><div class="line">        switch (v.getId()) &#123;</div><div class="line">            case R.id.my_layout:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyLayout onClick&quot;);</div><div class="line">                break;</div><div class="line">            case R.id.my_view:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyView onClick&quot;);</div><div class="line">                break;</div><div class="line">            default:</div><div class="line">                break;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public boolean dispatchTouchEvent(MotionEvent ev) &#123;</div><div class="line">        switch (ev.getAction()) &#123;</div><div class="line">            case MotionEvent.ACTION_DOWN:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;Activity dispatchTouchEvent ACTION_DOWN&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_MOVE:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;Activity dispatchTouchEvent ACTION_MOVE&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_UP:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;Activity dispatchTouchEvent ACTION_UP&quot;);</div><div class="line">                break;</div><div class="line">            default:</div><div class="line">                break;</div><div class="line">        &#125;</div><div class="line">        return super.dispatchTouchEvent(ev);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public void onUserInteraction() &#123;</div><div class="line">        Log.d(&quot;hcy&quot;, &quot;Activity onUserInteraction run&quot;);</div><div class="line">        super.onUserInteraction();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public boolean onTouch(View v, MotionEvent event) &#123;</div><div class="line">        switch (v.getId()) &#123;</div><div class="line">            case R.id.my_layout:</div><div class="line">                switch (event.getAction()) &#123;</div><div class="line">                    case MotionEvent.ACTION_DOWN:</div><div class="line">                        Log.d(&quot;hcy&quot;, &quot;MyLayout onTouch ACTION_DOWN&quot;);</div><div class="line">                        break;</div><div class="line">                    case MotionEvent.ACTION_MOVE:</div><div class="line">                        Log.d(&quot;hcy&quot;, &quot;MyLayout onTouch ACTION_MOVE&quot;);</div><div class="line">                        break;</div><div class="line">                    case MotionEvent.ACTION_UP:</div><div class="line">                        Log.d(&quot;hcy&quot;, &quot;MyLayout onTouch ACTION_UP&quot;);</div><div class="line">                        break;</div><div class="line">                    default:</div><div class="line">                        break;</div><div class="line">                &#125;</div><div class="line">                break;</div><div class="line">            case R.id.my_view:</div><div class="line">                switch (event.getAction()) &#123;</div><div class="line">                    case MotionEvent.ACTION_DOWN:</div><div class="line">                        Log.d(&quot;hcy&quot;, &quot;MyView onTouch ACTION_DOWN&quot;);</div><div class="line">                        break;</div><div class="line">                    case MotionEvent.ACTION_MOVE:</div><div class="line">                        Log.d(&quot;hcy&quot;, &quot;MyView onTouch ACTION_MOVE&quot;);</div><div class="line">                        break;</div><div class="line">                    case MotionEvent.ACTION_UP:</div><div class="line">                        Log.d(&quot;hcy&quot;, &quot;MyView onTouch ACTION_UP&quot;);</div><div class="line">                        break;</div><div class="line">                    default:</div><div class="line">                        break;</div><div class="line">                &#125;</div><div class="line">                break;</div><div class="line">            default:</div><div class="line">                break;</div><div class="line">        &#125;</div><div class="line">        return false;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>MyLayout.java</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * Created by hcy on 17-4-26.</div><div class="line"> */</div><div class="line"></div><div class="line">public class MyLayout extends LinearLayout &#123;</div><div class="line">    public MyLayout(Context context) &#123;</div><div class="line">        super(context);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    public MyLayout(Context context, AttributeSet attrs) &#123;</div><div class="line">        super(context, attrs);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    public MyLayout(Context context, AttributeSet attrs, int defStyleAttr) &#123;</div><div class="line">        super(context, attrs, defStyleAttr);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public boolean onInterceptTouchEvent(MotionEvent ev) &#123;</div><div class="line">        switch (ev.getAction()) &#123;</div><div class="line">            case MotionEvent.ACTION_DOWN:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyLayout onInterceptTouchEvent: ACTION_DOWN&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_MOVE:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyLayout onInterceptTouchEvent: ACTION_MOVE&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_UP:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyLayout onInterceptTouchEvent: ACTION_UP&quot;);</div><div class="line">                break;</div><div class="line">            default:</div><div class="line">                break;</div><div class="line">        &#125;</div><div class="line">        return super.onInterceptTouchEvent(ev);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public boolean onTouchEvent(MotionEvent event) &#123;</div><div class="line">        switch (event.getAction()) &#123;</div><div class="line">            case MotionEvent.ACTION_DOWN:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyLayout onTouchEvent: ACTION_DOWN&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_MOVE:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyLayout onTouchEvent: ACTION_MOVE&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_UP:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyLayout onTouchEvent: ACTION_UP&quot;);</div><div class="line">                break;</div><div class="line">            default:</div><div class="line">                break;</div><div class="line">        &#125;</div><div class="line">        return super.onTouchEvent(event);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public boolean dispatchTouchEvent(MotionEvent ev) &#123;</div><div class="line">        switch (ev.getAction()) &#123;</div><div class="line">            case MotionEvent.ACTION_DOWN:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyLayout dispatchTouchEvent: ACTION_DOWN&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_MOVE:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyLayout dispatchTouchEvent: ACTION_MOVE&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_UP:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyLayout dispatchTouchEvent: ACTION_UP&quot;);</div><div class="line">                break;</div><div class="line">            default:</div><div class="line">                break;</div><div class="line">        &#125;</div><div class="line">        return super.dispatchTouchEvent(ev);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>MyView.java</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * Created by hcy on 17-4-26.</div><div class="line"> */</div><div class="line"></div><div class="line">public class MyView extends TextView &#123;</div><div class="line">    public MyView(Context context) &#123;</div><div class="line">        super(context);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    public MyView(Context context, AttributeSet attrs) &#123;</div><div class="line">        super(context, attrs);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    public MyView(Context context, AttributeSet attrs, int defStyleAttr) &#123;</div><div class="line">        super(context, attrs, defStyleAttr);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public boolean onTouchEvent(MotionEvent event) &#123;</div><div class="line">        switch (event.getAction()) &#123;</div><div class="line">            case MotionEvent.ACTION_DOWN:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyView onTouchEvent: ACTION_DOWN&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_MOVE:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyView onTouchEvent: ACTION_MOVE&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_UP:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyView onTouchEvent: ACTION_UP&quot;);</div><div class="line">                break;</div><div class="line">            default:</div><div class="line">                break;</div><div class="line">        &#125;</div><div class="line">        return super.onTouchEvent(event);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public boolean dispatchTouchEvent(MotionEvent ev) &#123;</div><div class="line">        switch (ev.getAction()) &#123;</div><div class="line">            case MotionEvent.ACTION_DOWN:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyView dispatchTouchEvent: ACTION_DOWN&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_MOVE:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyView dispatchTouchEvent: ACTION_MOVE&quot;);</div><div class="line">                break;</div><div class="line">            case MotionEvent.ACTION_UP:</div><div class="line">                Log.d(&quot;hcy&quot;, &quot;MyView dispatchTouchEvent: ACTION_UP&quot;);</div><div class="line">                break;</div><div class="line">            default:</div><div class="line">                break;</div><div class="line">        &#125;</div><div class="line">        return super.dispatchTouchEvent(ev);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>activity_main.xml</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</div><div class="line">&lt;com.example.hcy.activityevent.MyLayout xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</div><div class="line">    xmlns:tools=&quot;http://schemas.android.com/tools&quot;</div><div class="line">    android:id=&quot;@+id/my_layout&quot;</div><div class="line">    android:layout_width=&quot;match_parent&quot;</div><div class="line">    android:layout_height=&quot;match_parent&quot;</div><div class="line">    tools:context=&quot;com.example.hcy.activityevent.MainActivity&quot;&gt;</div><div class="line"></div><div class="line">    &lt;com.example.hcy.activityevent.MyView</div><div class="line">        android:id=&quot;@+id/my_view&quot;</div><div class="line">        android:layout_width=&quot;wrap_content&quot;</div><div class="line">        android:layout_height=&quot;wrap_content&quot;</div><div class="line">        android:text=&quot;Hello World!&quot; /&gt;</div><div class="line">&lt;/com.example.hcy.activityevent.MyLayout&gt;</div></pre></td></tr></table></figure>
+<p>代码很简单，运行点击MyView，log打印如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">03-02 00:18:04.596 15312 15312 D hcy     : Activity dispatchTouchEvent ACTION_DOWN</div><div class="line">03-02 00:18:04.597 15312 15312 D hcy     : Activity onUserInteraction run</div><div class="line">03-02 00:18:04.597 15312 15312 D hcy     : MyLayout dispatchTouchEvent: ACTION_DOWN</div><div class="line">03-02 00:18:04.597 15312 15312 D hcy     : MyLayout onInterceptTouchEvent: ACTION_DOWN</div><div class="line">03-02 00:18:04.597 15312 15312 D hcy     : MyView dispatchTouchEvent: ACTION_DOWN</div><div class="line">03-02 00:18:04.597 15312 15312 D hcy     : MyView onTouch ACTION_DOWN</div><div class="line">03-02 00:18:04.597 15312 15312 D hcy     : MyView onTouchEvent: ACTION_DOWN</div><div class="line">03-02 00:18:04.645 15312 15312 D hcy     : Activity dispatchTouchEvent ACTION_UP</div><div class="line">03-02 00:18:04.645 15312 15312 D hcy     : MyLayout dispatchTouchEvent: ACTION_UP</div><div class="line">03-02 00:18:04.645 15312 15312 D hcy     : MyLayout onInterceptTouchEvent: ACTION_UP</div><div class="line">03-02 00:18:04.645 15312 15312 D hcy     : MyView dispatchTouchEvent: ACTION_UP</div><div class="line">03-02 00:18:04.645 15312 15312 D hcy     : MyView onTouch ACTION_UP</div><div class="line">03-02 00:18:04.645 15312 15312 D hcy     : MyView onTouchEvent: ACTION_UP</div><div class="line">03-02 00:18:04.647 15312 15312 D hcy     : MyView onClick</div></pre></td></tr></table></figure>
+<p>发现DOWN事件触发后最先经过Activity的dispatchTouchEvent方法，再由ViewGroup到View派发，ViewGroup到View的那一套流程之前已经分析过了，这里在DOWN的时候还调用了onUserInteraction 方法，而UP的时候并没有调用</p>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>查看Activity的dispatchTouchEvent 方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * Called to process touch screen events.  You can override this to</div><div class="line"> * intercept all touch screen events before they are dispatched to the</div><div class="line"> * window.  Be sure to call this implementation for touch screen events</div><div class="line"> * that should be handled normally.</div><div class="line"> *</div><div class="line"> * @param ev The touch screen event.</div><div class="line"> *</div><div class="line"> * @return boolean Return true if this event was consumed.</div><div class="line"> */</div><div class="line">public boolean dispatchTouchEvent(MotionEvent ev) &#123;</div><div class="line">    if (ev.getAction() == MotionEvent.ACTION_DOWN) &#123;</div><div class="line">        onUserInteraction();</div><div class="line">    &#125;</div><div class="line">    if (getWindow().superDispatchTouchEvent(ev)) &#123;</div><div class="line">        return true;</div><div class="line">    &#125;</div><div class="line">    return onTouchEvent(ev);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里看到第一个语句如果是DOWN事件，会执行onUserInteraction()方法，查看onUserInteraction方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * Called whenever a key, touch, or trackball event is dispatched to the</div><div class="line"> * activity.  Implement this method if you wish to know that the user has</div><div class="line"> * interacted with the device in some way while your activity is running.</div><div class="line"> * This callback and &#123;@link #onUserLeaveHint&#125; are intended to help</div><div class="line"> * activities manage status bar notifications intelligently; specifically,</div><div class="line"> * for helping activities determine the proper time to cancel a notfication.</div><div class="line"> *</div><div class="line"> * &lt;p&gt;All calls to your activity&apos;s &#123;@link #onUserLeaveHint&#125; callback will</div><div class="line"> * be accompanied by calls to &#123;@link #onUserInteraction&#125;.  This</div><div class="line"> * ensures that your activity will be told of relevant user activity such</div><div class="line"> * as pulling down the notification pane and touching an item there.</div><div class="line"> *</div><div class="line"> * &lt;p&gt;Note that this callback will be invoked for the touch down action</div><div class="line"> * that begins a touch gesture, but may not be invoked for the touch-moved</div><div class="line"> * and touch-up actions that follow.</div><div class="line"> *</div><div class="line"> * @see #onUserLeaveHint()</div><div class="line"> */</div><div class="line">public void onUserInteraction() &#123;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>该方法是个空方法，没用过暂时还不清楚是干嘛的，从注释大致介绍该方法可以帮助activity智能管理状态栏上的通知，例如在适当的时候删除通知。</p>
+<p>继续回到前面分析，第二个if判断语句判断getWindow().superDispatchTouchEvent(ev)的返回值，若为true则返回true，反正返回activity自身的onTouchEvent(ev)。<br>Activity中的getWindow()方法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * Retrieve the current &#123;@link android.view.Window&#125; for the activity.</div><div class="line"> * This can be used to directly access parts of the Window API that</div><div class="line"> * are not available through Activity/Screen.</div><div class="line"> *</div><div class="line"> * @return Window The current window, or null if the activity is not</div><div class="line"> *         visual.</div><div class="line"> */</div><div class="line">public Window getWindow() &#123;</div><div class="line">    return mWindow;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里的mWindow是Window的一个实例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">private Window mWindow;</div></pre></td></tr></table></figure>
+<p>而它的实例化是在Activity的attach方法中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div></pre></td><td class="code"><pre><div class="line">final void attach(Context context, ActivityThread aThread,</div><div class="line">        Instrumentation instr, IBinder token, int ident,</div><div class="line">        Application application, Intent intent, ActivityInfo info,</div><div class="line">        CharSequence title, Activity parent, String id,</div><div class="line">        NonConfigurationInstances lastNonConfigurationInstances,</div><div class="line">        Configuration config, String referrer, IVoiceInteractor voiceInteractor,</div><div class="line">        Window window) &#123;</div><div class="line">    attachBaseContext(context);</div><div class="line"></div><div class="line">    mFragments.attachHost(null /*parent*/);</div><div class="line"></div><div class="line">    mWindow = new PhoneWindow(this, window);</div><div class="line">    mWindow.setWindowControllerCallback(this);</div><div class="line">    mWindow.setCallback(this);</div><div class="line">    mWindow.setOnWindowDismissedCallback(this);</div><div class="line">    mWindow.getLayoutInflater().setPrivateFactory(this);</div><div class="line">    if (info.softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED) &#123;</div><div class="line">        mWindow.setSoftInputMode(info.softInputMode);</div><div class="line">    &#125;</div><div class="line">    if (info.uiOptions != 0) &#123;</div><div class="line">        mWindow.setUiOptions(info.uiOptions);</div><div class="line">    &#125;</div><div class="line">    mUiThread = Thread.currentThread();</div><div class="line"></div><div class="line">    mMainThread = aThread;</div><div class="line">    mInstrumentation = instr;</div><div class="line">    mToken = token;</div><div class="line">    mIdent = ident;</div><div class="line">    mApplication = application;</div><div class="line">    mIntent = intent;</div><div class="line">    mReferrer = referrer;</div><div class="line">    mComponent = intent.getComponent();</div><div class="line">    mActivityInfo = info;</div><div class="line">    mTitle = title;</div><div class="line">    mParent = parent;</div><div class="line">    mEmbeddedID = id;</div><div class="line">    mLastNonConfigurationInstances = lastNonConfigurationInstances;</div><div class="line">    if (voiceInteractor != null) &#123;</div><div class="line">        if (lastNonConfigurationInstances != null) &#123;</div><div class="line">            mVoiceInteractor = lastNonConfigurationInstances.voiceInteractor;</div><div class="line">        &#125; else &#123;</div><div class="line">            mVoiceInteractor = new VoiceInteractor(voiceInteractor, this, this,</div><div class="line">                    Looper.myLooper());</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    mWindow.setWindowManager(</div><div class="line">            (WindowManager)context.getSystemService(Context.WINDOW_SERVICE),</div><div class="line">            mToken, mComponent.flattenToString(),</div><div class="line">            (info.flags &amp; ActivityInfo.FLAG_HARDWARE_ACCELERATED) != 0);</div><div class="line">    if (mParent != null) &#123;</div><div class="line">        mWindow.setContainer(mParent.getWindow());</div><div class="line">    &#125;</div><div class="line">    mWindowManager = mWindow.getWindowManager();</div><div class="line">    mCurrentConfig = config;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Window是个抽象类，通过new PhoneWindow实例化mWindow，因此去PhoneWindow类中查看superDispatchTouchEvent方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public boolean superDispatchTouchEvent(MotionEvent event) &#123;</div><div class="line">    return mDecor.superDispatchTouchEvent(event);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里把皮球踢给了mDecor，那mDecor又是啥呢？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">private final class DecorView extends FrameLayout implements RootViewSurfaceTaker</div></pre></td></tr></table></figure>
+<p>DecorView是PhoneWindow的一个内部类，并且是FrameLayout的子类，而FrameLayout是ViewGroup的子类，因此DecorView也是个ViewGroup，看下它里面的superDispatchTouchEvent方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">public boolean superDispatchTouchEvent(MotionEvent event) &#123;</div><div class="line">    return super.dispatchTouchEvent(event);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>原来到头来是调用ViewGroup的dispatchTouchEvent方法，接下来就是ViewGroup的那一套流程，上一篇已经分析过了。<br>另外通过SDK下的hierarchyviewer工具可以查看当前进程的UI层级</p>
+<p><a href="http://upload-images.jianshu.io/upload_images/989851-eafe6ca9ebbf7131.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" target="_blank" rel="external"><img src="http://upload-images.jianshu.io/upload_images/989851-eafe6ca9ebbf7131.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="hierarchyviewer1.png"></a><br><a href="http://upload-images.jianshu.io/upload_images/989851-c8114f19d488bdaf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" target="_blank" rel="external"><img src="http://upload-images.jianshu.io/upload_images/989851-c8114f19d488bdaf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="hierarchyviewer2.png"></a><br>可以看到自定义的LinearLayout被放在一个id为content的FrameLayout里。</p>
+<p>回过头来继续看下Activity中onTouchEvent方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * Called when a touch screen event was not handled by any of the views</div><div class="line"> * under it.  This is most useful to process touch events that happen</div><div class="line"> * outside of your window bounds, where there is no view to receive it.</div><div class="line"> *</div><div class="line"> * @param event The touch screen event being processed.</div><div class="line"> *</div><div class="line"> * @return Return true if you have consumed the event, false if you haven&apos;t.</div><div class="line"> * The default implementation always returns false.</div><div class="line"> */</div><div class="line">public boolean onTouchEvent(MotionEvent event) &#123;</div><div class="line">    if (mWindow.shouldCloseOnTouch(this, event)) &#123;</div><div class="line">        finish();</div><div class="line">        return true;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    return false;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>从注解可以大致了解该方法的作用：<br>该方法被调用当一个触摸屏幕的事件未被Activity下任何一个View处理，这对于处理发生在Window边界外的触摸事件是很有用的，因为没有View可以接收到事件，返回true代表消费事件，false表示未消费，默认返回false。<br>看下if判断，在PhoneWindow未中找到shouldCloseOnTouch方法，那就去它爹里面找</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">/** @hide */</div><div class="line">public boolean shouldCloseOnTouch(Context context, MotionEvent event) &#123;</div><div class="line">    if (mCloseOnTouchOutside &amp;&amp; event.getAction() == MotionEvent.ACTION_DOWN</div><div class="line">            &amp;&amp; isOutOfBounds(context, event) &amp;&amp; peekDecorView() != null) &#123;</div><div class="line">        return true;</div><div class="line">    &#125;</div><div class="line">    return false;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上面主要是判断mCloseOnTouchOutside的值，当前的是否是DOWN事件，event的坐标是否在边界内，DecorView是否为null，这些主要是对于处理边界外touch的判断。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>1.触摸屏幕的事件首先会经过Activity的dispatchTouchEvent方法，如果是DOWN，会调用onUserInteraction方法，Activity分发事件本质与ViewGroup相同，因为Activity的root view是一个继承自FrameLayout的ViewGroup，再调用ViewGroup的dispatchTouchEvent方法分发到处理该事件的子View。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+     
+     <div>    
+      
+      <ul class="post-copyright">
+         <li class="post-copyright-link">
+          <strong>本文作者：</strong>
+          <a href="/" title="欢迎访问 HuYounger 的个人博客">HuYounger</a>
+        </li>
+        <li class="post-copyright-link">
+          <strong>本文标题：</strong>
+          <a href="http://yoursite.com/2017/04/28/Android Activity事件分发机制/" title="Android Activity事件分发机制">Android Activity事件分发机制</a>
+        </li>
+        <li class="post-copyright-link">
+          <strong>本文链接：</strong>
+          <a href="http://yoursite.com/2017/04/28/Android Activity事件分发机制/" title="Android Activity事件分发机制">http://yoursite.com/2017/04/28/Android Activity事件分发机制/</a>
+        </li>
+        <li class="post-copyright-date">
+            <strong>发布时间：</strong>2017年4月28日 - 00时04分
+        </li>  
+        <li class="post-copyright-license">
+          <strong>版权声明： </strong>
+          本文由 HuYounger 原创，采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh" rel="license" target="_blank">保留署名-非商业性使用-禁止演绎 4.0-国际许可协议</a> </br>转载请保留以上声明信息！
+        </li>
+      </ul>
+    
+  </div>
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/26/Android ViewGroup事件分发机制/" rel="next" title="Android ViewGroup事件分发机制">
+                <i class="fa fa-chevron-left"></i> Android ViewGroup事件分发机制
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/04/30/2017 book list/" rel="prev" title="2017 book list">
+                2017 book list <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          
+            <img class="site-author-image" itemprop="image"
+              src="http://7xjvg5.com1.z0.glb.clouddn.com/avatar.jpeg"
+              alt="HuYounger" />
+          
+            <p class="site-author-name" itemprop="name">HuYounger</p>
+            <p class="site-description motion-element" itemprop="description">Less is more</p>
+        </div>
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives/">
+            
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/Rkhcy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>GitHub</a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#例子"><span class="nav-number">2.</span> <span class="nav-text">例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码分析"><span class="nav-number">3.</span> <span class="nav-text">源码分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 &mdash; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">HuYounger</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.2</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("rcy0CA7vKecGb0eQxcnHdO3i-gzGzoHsz", "N9PBf4dqgEeMJL7klXsAli0a");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

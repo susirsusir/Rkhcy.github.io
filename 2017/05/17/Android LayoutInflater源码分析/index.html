@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="概述在初学Android的时候LayoutInflater是经常用到的一个类，例如在ListView的getView方法，LayoutInflater的作用主要是用来加载布局。上篇在介绍到Activity通过调用setContentView加载布局，通过阅读源码发现其内部还是调用LayoutInflater的inflate方法，继续阅读源码看看内部具体的实现原理。 DemoMainActivity">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android LayoutInflater源码分析">
+<meta property="og:url" content="http://yoursite.com/2017/05/17/Android LayoutInflater源码分析/index.html">
+<meta property="og:site_name" content="HuYounger&#39;s Note">
+<meta property="og:description" content="概述在初学Android的时候LayoutInflater是经常用到的一个类，例如在ListView的getView方法，LayoutInflater的作用主要是用来加载布局。上篇在介绍到Activity通过调用setContentView加载布局，通过阅读源码发现其内部还是调用LayoutInflater的inflate方法，继续阅读源码看看内部具体的实现原理。 DemoMainActivity">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/LayoutInflater2.png">
+<meta property="og:updated_time" content="2017-09-11T01:40:11.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android LayoutInflater源码分析">
+<meta name="twitter:description" content="概述在初学Android的时候LayoutInflater是经常用到的一个类，例如在ListView的getView方法，LayoutInflater的作用主要是用来加载布局。上篇在介绍到Activity通过调用setContentView加载布局，通过阅读源码发现其内部还是调用LayoutInflater的inflate方法，继续阅读源码看看内部具体的实现原理。 DemoMainActivity">
+<meta name="twitter:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/LayoutInflater2.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.2',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/05/17/Android LayoutInflater源码分析/"/>
+
+
+
+
+
+  <title>Android LayoutInflater源码分析 | HuYounger's Note</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">HuYounger's Note</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/17/Android LayoutInflater源码分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="HuYounger">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://7xjvg5.com1.z0.glb.clouddn.com/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HuYounger's Note">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android LayoutInflater源码分析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-17T00:00:00+08:00">
+                2017-05-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/05/17/Android LayoutInflater源码分析/" class="leancloud_visitors" data-flag-title="Android LayoutInflater源码分析">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在初学Android的时候LayoutInflater是经常用到的一个类，例如在ListView的getView方法，LayoutInflater的作用主要是用来加载布局。上篇在介绍到Activity通过调用setContentView加载布局，通过阅读源码发现其内部还是调用LayoutInflater的inflate方法，继续阅读源码看看内部具体的实现原理。</p>
+<h2 id="Demo"><a href="#Demo" class="headerlink" title="Demo"></a>Demo</h2><p>MainActivity.java</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">public class MainActivity extends AppCompatActivity &#123;</div><div class="line">    private ListView mListView;</div><div class="line">    private MyAdapter mMyAdapter;</div><div class="line">    @Override</div><div class="line">    protected void onCreate(Bundle savedInstanceState) &#123;</div><div class="line">        super.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        mListView = (ListView) findViewById(R.id.listview);</div><div class="line">        mMyAdapter = new MyAdapter(this);</div><div class="line">        mListView.setAdapter(mMyAdapter);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>MyAdapter.java</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line">public class MyAdapter extends BaseAdapter &#123;</div><div class="line">    private LayoutInflater mLayoutInflater;</div><div class="line">    public MyAdapter(Context context)&#123;</div><div class="line">        mLayoutInflater = LayoutInflater.from(context);</div><div class="line">    &#125;</div><div class="line">    @Override</div><div class="line">    public int getCount() &#123;</div><div class="line">        return 8;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public Object getItem(int position) &#123;</div><div class="line">        return null;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public long getItemId(int position) &#123;</div><div class="line">        return 0;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public View getView(int position, View convertView, ViewGroup parent) &#123;</div><div class="line">        View v0 = mLayoutInflater.inflate(R.layout.item_listview, null);</div><div class="line">        View v1 = mLayoutInflater.inflate(R.layout.item_listview, null, false);</div><div class="line">        View v2 = mLayoutInflater.inflate(R.layout.item_listview, null, true);</div><div class="line">        //View v3 = mLayoutInflater.inflate(R.layout.item_listview, parent);</div><div class="line">        View v3 = mLayoutInflater.inflate(R.layout.item_listview, parent, false);</div><div class="line">        //View v3 = mLayoutInflater.inflate(R.layout.item_listview, parent, true);</div><div class="line"></div><div class="line">        View v4 = mLayoutInflater.inflate(R.layout.item_listview_parent, null);</div><div class="line">        View v5 = mLayoutInflater.inflate(R.layout.item_listview_parent, null, false);</div><div class="line">        View v6 = mLayoutInflater.inflate(R.layout.item_listview_parent, null, true);</div><div class="line">        //View v7 = mLayoutInflater.inflate(R.layout.item_listview_parent, parent);</div><div class="line">        View v7 = mLayoutInflater.inflate(R.layout.item_listview_parent, parent, false);</div><div class="line">        //View v7 = mLayoutInflater.inflate(R.layout.item_listview_parent, parent, true);</div><div class="line">        View[] viewLists = &#123;v0, v1, v2, v3, v4, v5, v6, v7&#125;;</div><div class="line">        convertView = viewLists[position];</div><div class="line">        ViewGroup.LayoutParams layoutParams = convertView.getLayoutParams();</div><div class="line">        if (layoutParams == null) &#123;</div><div class="line">            Log.d(&quot;hcy&quot;, &quot;position &quot; + position + &quot; layoutParams is null&quot; );</div><div class="line">        &#125; else &#123;</div><div class="line">            Log.d(&quot;hcy&quot;, &quot;position &quot; + position + &quot; layoutParams.width is: &quot; + layoutParams.width + &quot; layoutParams.height is: &quot; + layoutParams.height);</div><div class="line">        &#125;</div><div class="line">        return convertView;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>activity_main.xml</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</div><div class="line">&lt;android.support.constraint.ConstraintLayout</div><div class="line">    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</div><div class="line">    xmlns:tools=&quot;http://schemas.android.com/tools&quot;</div><div class="line">    android:layout_width=&quot;match_parent&quot;</div><div class="line">    android:layout_height=&quot;match_parent&quot;</div><div class="line">    tools:context=&quot;com.hcy.layoutinflaterdemo.MainActivity&quot;&gt;</div><div class="line"></div><div class="line">    &lt;ListView</div><div class="line">        android:id=&quot;@+id/listview&quot;</div><div class="line">        android:layout_width=&quot;match_parent&quot;</div><div class="line">        android:layout_height=&quot;match_parent&quot;</div><div class="line">        /&gt;</div><div class="line"></div><div class="line">&lt;/android.support.constraint.ConstraintLayout&gt;</div></pre></td></tr></table></figure>
+<p>item_listview.xml</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</div><div class="line">&lt;TextView android:id=&quot;@+id/list_item&quot;</div><div class="line">    android:layout_width=&quot;100dp&quot;</div><div class="line">    android:layout_height=&quot;50dp&quot;</div><div class="line">    android:text=&quot;Hello World&quot;</div><div class="line">    android:background=&quot;@android:color/holo_purple&quot;</div><div class="line">    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot; /&gt;</div></pre></td></tr></table></figure>
+<p>item_listview_parent.xml</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</div><div class="line">&lt;LinearLayout xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</div><div class="line">    android:layout_width=&quot;wrap_content&quot;</div><div class="line">    android:layout_height=&quot;wrap_content&quot;</div><div class="line">    android:background=&quot;@android:color/holo_purple&quot;&gt;</div><div class="line">    &lt;TextView</div><div class="line">        android:id=&quot;@+id/text&quot;</div><div class="line">        android:layout_height=&quot;50dp&quot;</div><div class="line">        android:layout_width=&quot;100dp&quot;</div><div class="line">        android:text=&quot;Hello World&quot;</div><div class="line">        android:background=&quot;@android:color/holo_orange_dark&quot;/&gt;</div><div class="line"></div><div class="line">&lt;/LinearLayout&gt;</div></pre></td></tr></table></figure>
+<p>该Demo比较简单，写这个Demo的主要目的是要搞清楚inflate方法的参数设置给布局带来的影响，这也是自己一直没记清楚的地方。</p>
+<p>运行结果</p>
+<p>​    <img src="http://7xjvg5.com1.z0.glb.clouddn.com/LayoutInflater2.png" style="zoom:25%"></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>显示的结果很奇怪，疑问如下：</p>
+<ul>
+<li>position0-2item我明明指定的width和height分别是100dp和50dp，为什么width显示成match_parent，高度也不对？而且第三个参数有没有好像不影响显示</li>
+<li>position4-6item的LinearLayout的width和height分别是wrap_content，为什么宽显示成match_parent</li>
+<li>在调试的时候若把MyAdapter中注释的几行打开会报错<code>Caused by: java.lang.UnsupportedOperationException: addView(View, LayoutParams) is not supported in AdapterView</code></li>
+</ul>
+<p>Why?</p>
+<h2 id="LayoutInflater源码分析"><a href="#LayoutInflater源码分析" class="headerlink" title="LayoutInflater源码分析"></a>LayoutInflater源码分析</h2><p>首先看下获取LayoutInflater实例的地方，在MyAdapter中通过<br>LayoutInflater.from(context)获取，那这里的from方法具体又干了什么?</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">源码路径：sdk/sources/android-25/android/view/LayoutInflater.java</div><div class="line">    /**</div><div class="line">     * Obtains the LayoutInflater from the given context.</div><div class="line">     */</div><div class="line">    public static LayoutInflater from(Context context) &#123;</div><div class="line">        LayoutInflater LayoutInflater =</div><div class="line">                (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);</div><div class="line">        if (LayoutInflater == null) &#123;</div><div class="line">            throw new AssertionError(&quot;LayoutInflater not found.&quot;);</div><div class="line">        &#125;</div><div class="line">        return LayoutInflater;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>从这里的源码看到获取LayoutInflater实例的另外一种写法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">LayoutInflater LayoutInflater =</div><div class="line">                (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);</div></pre></td></tr></table></figure>
+<p>获取实例之后调用inflate方法，传入xml布局让它帮忙加载，inflate方法如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">public View inflate(@LayoutRes int resource, @Nullable ViewGroup root) &#123;</div><div class="line">    return inflate(resource, root, root != null);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>发现该方法会调用包含3个参数的方法，第三个参数的值取决于第二参数root是否为null</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">public View inflate(@LayoutRes int resource, @Nullable ViewGroup root, boolean attachToRoot) &#123;</div><div class="line">    final Resources res = getContext().getResources();</div><div class="line">    if (DEBUG) &#123;</div><div class="line">        Log.d(TAG, &quot;INFLATING from resource: \&quot;&quot; + res.getResourceName(resource) + &quot;\&quot; (&quot;</div><div class="line">                + Integer.toHexString(resource) + &quot;)&quot;);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    final XmlResourceParser parser = res.getLayout(resource);</div><div class="line">    try &#123;</div><div class="line">        return inflate(parser, root, attachToRoot);</div><div class="line">    &#125; finally &#123;</div><div class="line">        parser.close();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过Resources获取一个XmlResourceParser(LayoutInflater是使用pull解析方式来解析xml)，接着又把第一个参数由int改成XmlResourceParser，继续调用inflate方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div></pre></td><td class="code"><pre><div class="line">public View inflate(XmlPullParser parser, @Nullable ViewGroup root, boolean attachToRoot) &#123;</div><div class="line">    synchronized (mConstructorArgs) &#123;</div><div class="line"></div><div class="line">        final Context inflaterContext = mContext;</div><div class="line">        final AttributeSet attrs = Xml.asAttributeSet(parser);</div><div class="line">        Context lastContext = (Context) mConstructorArgs[0];</div><div class="line">        mConstructorArgs[0] = inflaterContext;</div><div class="line">        //该方法的返回值，初始化为我们传入的第二个参数root</div><div class="line">        View result = root;</div><div class="line"></div><div class="line">        try &#123;</div><div class="line">            // Look for the root node.</div><div class="line">            int type;</div><div class="line">            while ((type = parser.next()) != XmlPullParser.START_TAG &amp;&amp;</div><div class="line">                    type != XmlPullParser.END_DOCUMENT) &#123;</div><div class="line">                // Empty</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            if (type != XmlPullParser.START_TAG) &#123;</div><div class="line">                throw new InflateException(parser.getPositionDescription()</div><div class="line">                        + &quot;: No start tag found!&quot;);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            final String name = parser.getName();</div><div class="line"></div><div class="line">            if (TAG_MERGE.equals(name)) &#123;</div><div class="line">            	//如果标签是merge则root不能为空且attachToRoot必须为true，否则会抛异常(merge标签用于xml性能优化)</div><div class="line">                if (root == null || !attachToRoot) &#123;</div><div class="line">                    throw new InflateException(&quot;&lt;merge /&gt; can be used only with a valid &quot;</div><div class="line">                            + &quot;ViewGroup root and attachToRoot=true&quot;);</div><div class="line">                &#125;</div><div class="line">                //遍历加载子元素view</div><div class="line">                rInflate(parser, root, inflaterContext, attrs, false);</div><div class="line">            &#125; else &#123;</div><div class="line">                // Temp is the root view that was found in the xml</div><div class="line">                //根据tag名称生成xml中的root View对象</div><div class="line">                final View temp = createViewFromTag(root, name, inflaterContext, attrs);</div><div class="line"></div><div class="line">                ViewGroup.LayoutParams params = null;</div><div class="line"></div><div class="line">                if (root != null) &#123;</div><div class="line">                    // Create layout params that match root, if supplied</div><div class="line">                    //生成root的LayoutParams</div><div class="line">                    params = root.generateLayoutParams(attrs);</div><div class="line">                    if (!attachToRoot) &#123;</div><div class="line">                        // Set the layout params for temp if we are not</div><div class="line">                        // attaching. (If we are, we use addView, below)</div><div class="line">                        //第三个参数attachToRoot为false时执行View的setLayoutParams</div><div class="line">                        temp.setLayoutParams(params);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                // Inflate all children under temp against its context.</div><div class="line">                //遍历解析temp下的子View</div><div class="line">                rInflateChildren(parser, temp, attrs, true);</div><div class="line"></div><div class="line">                // We are supposed to attach all the views we found (int temp)</div><div class="line">                // to root. Do that now.</div><div class="line">                if (root != null &amp;&amp; attachToRoot) &#123;</div><div class="line">                //第二个参数root非空且第三个参数attachToRoot为true则把xml解析完成的view添加到root中</div><div class="line">                    root.addView(temp, params);</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                // Decide whether to return the root that was passed in or the</div><div class="line">                // top view found in xml.</div><div class="line">                if (root == null || !attachToRoot) &#123;</div><div class="line">                    //第二个参数root为空或第三个参数attachToRoot为false时返回xml中解析的root view</div><div class="line">                    result = temp;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">        &#125; catch (XmlPullParserException e) &#123;</div><div class="line">            final InflateException ie = new InflateException(e.getMessage(), e);</div><div class="line">            ie.setStackTrace(EMPTY_STACK_TRACE);</div><div class="line">            throw ie;</div><div class="line">        &#125; catch (Exception e) &#123;</div><div class="line">            final InflateException ie = new InflateException(parser.getPositionDescription()</div><div class="line">                    + &quot;: &quot; + e.getMessage(), e);</div><div class="line">            ie.setStackTrace(EMPTY_STACK_TRACE);</div><div class="line">            throw ie;</div><div class="line">        &#125; finally &#123;</div><div class="line">            // Don&apos;t retain static reference on context.</div><div class="line">            mConstructorArgs[0] = lastContext;</div><div class="line">            mConstructorArgs[1] = null;</div><div class="line"></div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        return result;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>删掉一些不影响阅读的DEBUG日志后开始分析该方法，在37行传入节点名称通过createViewFromTag方法生成根布局的实例，createViewFromTag()方法内部又会去调用createView()方法，然后通过反射的方式创建出View的实例并返回。根布局解析完成后，55行调用rInflateChildren方法解析根布局下的子View</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div></pre></td><td class="code"><pre><div class="line">final void rInflateChildren(XmlPullParser parser, View parent, AttributeSet attrs,</div><div class="line">        boolean finishInflate) throws XmlPullParserException, IOException &#123;</div><div class="line">    rInflate(parser, parent, parent.getContext(), attrs, finishInflate);</div><div class="line">&#125;</div><div class="line"></div><div class="line">void rInflate(XmlPullParser parser, View parent, Context context,</div><div class="line">        AttributeSet attrs, boolean finishInflate) throws XmlPullParserException, IOException &#123;</div><div class="line"></div><div class="line">    final int depth = parser.getDepth();</div><div class="line">    int type;</div><div class="line"></div><div class="line">    while (((type = parser.next()) != XmlPullParser.END_TAG ||</div><div class="line">            parser.getDepth() &gt; depth) &amp;&amp; type != XmlPullParser.END_DOCUMENT) &#123;</div><div class="line"></div><div class="line">        if (type != XmlPullParser.START_TAG) &#123;</div><div class="line">            continue;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        final String name = parser.getName();</div><div class="line">        </div><div class="line">        if (TAG_REQUEST_FOCUS.equals(name)) &#123;</div><div class="line">            parseRequestFocus(parser, parent);</div><div class="line">        &#125; else if (TAG_TAG.equals(name)) &#123;</div><div class="line">            parseViewTag(parser, parent, attrs);</div><div class="line">        &#125; else if (TAG_INCLUDE.equals(name)) &#123;</div><div class="line">            if (parser.getDepth() == 0) &#123;</div><div class="line">                throw new InflateException(&quot;&lt;include /&gt; cannot be the root element&quot;);</div><div class="line">            &#125;</div><div class="line">            parseInclude(parser, context, parent, attrs);</div><div class="line">        &#125; else if (TAG_MERGE.equals(name)) &#123;</div><div class="line">            throw new InflateException(&quot;&lt;merge /&gt; must be the root element&quot;);</div><div class="line">        &#125; else &#123;</div><div class="line">            final View view = createViewFromTag(parent, name, context, attrs);</div><div class="line">            final ViewGroup viewGroup = (ViewGroup) parent;</div><div class="line">            final ViewGroup.LayoutParams params = viewGroup.generateLayoutParams(attrs);</div><div class="line">            rInflateChildren(parser, view, attrs, true);</div><div class="line">            viewGroup.addView(view, params);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    if (finishInflate) &#123;</div><div class="line">        parent.onFinishInflate();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>根据不同的tag做不同的解析，如果不是requestFocus 、tag 、include、merge就调用 createViewFromTag()方法，然后循环rInflateChildren()，直到解析出所有View，最后会把最顶层的根布局返回，至此inflate()完成。</p>
+<h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><p>源码也看完了，现在回头来看下我们的例子显示的原因。</p>
+<p>分析1：position0-2item的布局是一个TextView，inflate方法的第二个参数为null，根据上面的分析，可以简化成下面的代码流程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">final View temp = createViewFromTag(root, name, inflaterContext, attrs)；</div><div class="line">if (root == null || !attachToRoot) &#123;</div><div class="line">    result = temp;</div><div class="line">&#125;</div><div class="line">return result;</div></pre></td></tr></table></figure>
+<p>这里temp的LayoutParams并没有实例化，所以为null，因此不管设置宽高为多少都不能正常显示，那为什么它默认显示宽为match_parent呢？<br>ListView extends AbsListView，AbsListView extends AdapterView，在AbsListView 中有这几个方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * Get a view and have it show the data associated with the specified</div><div class="line"> * position. This is called when we have already discovered that the view is</div><div class="line"> * not available for reuse in the recycle bin. The only choices left are</div><div class="line"> * converting an old view or making a new one.</div><div class="line"> *</div><div class="line"> * @param position The position to display</div><div class="line"> * @param isScrap Array of at least 1 boolean, the first entry will become true if</div><div class="line"> *                the returned view was taken from the &quot;temporary detached&quot; scrap heap, false if</div><div class="line"> *                otherwise.</div><div class="line"> *</div><div class="line"> * @return A view displaying the data associated with the specified position</div><div class="line"> */</div><div class="line">View obtainView(int position, boolean[] isScrap) &#123;</div><div class="line">    ......</div><div class="line">    setItemViewLayoutParams(child, position);</div><div class="line">    ......</div><div class="line">    return child;</div><div class="line">&#125;</div><div class="line"></div><div class="line">private void setItemViewLayoutParams(View child, int position) &#123;</div><div class="line">    final ViewGroup.LayoutParams vlp = child.getLayoutParams();</div><div class="line">    LayoutParams lp;</div><div class="line">    if (vlp == null) &#123;</div><div class="line">        lp = (LayoutParams) generateDefaultLayoutParams();</div><div class="line">    &#125; else if (!checkLayoutParams(vlp)) &#123;</div><div class="line">        lp = (LayoutParams) generateLayoutParams(vlp);</div><div class="line">    &#125; else &#123;</div><div class="line">        lp = (LayoutParams) vlp;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    if (mAdapterHasStableIds) &#123;</div><div class="line">        lp.itemId = mAdapter.getItemId(position);</div><div class="line">    &#125;</div><div class="line">    lp.viewType = mAdapter.getItemViewType(position);</div><div class="line">    lp.isEnabled = mAdapter.isEnabled(position);</div><div class="line">    if (lp != vlp) &#123;</div><div class="line">      child.setLayoutParams(lp);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">protected ViewGroup.LayoutParams generateDefaultLayoutParams() &#123;</div><div class="line">    return new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,</div><div class="line">            ViewGroup.LayoutParams.WRAP_CONTENT, 0);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过这里的代码发现如果Item的layoutParams属性为null，默认为其设置一个宽度为match_parent，高度为wrap_content的layoutParams属性，因此position0-2item显示成那样就说得通了。</p>
+<p>分析2：position3item布局是一个TextView，第二个参数root不为null，第三个参数为false，可以简化成下面的代码流程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">final View temp = createViewFromTag(root, name, inflaterContext, attrs);</div><div class="line">ViewGroup.LayoutParams params = null;</div><div class="line">if (root != null) &#123;</div><div class="line">    // Create layout params that match root, if supplied</div><div class="line">    params = root.generateLayoutParams(attrs);</div><div class="line">    if (!attachToRoot) &#123;</div><div class="line">        // Set the layout params for temp if we are not</div><div class="line">        // attaching. (If we are, we use addView, below)</div><div class="line">        temp.setLayoutParams(params);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里的root就是ListView，在它的父类AbsListView中找到generateLayoutParams方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">protected ViewGroup.LayoutParams generateLayoutParams(ViewGroup.LayoutParams p) &#123;</div><div class="line">    return new LayoutParams(p);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其实就是对LayoutParams初始化，后面temp再根据这里的LayoutParams加载布局，因此能够正常显示。</p>
+<p>分析3：position4-6item由LinearLayout包裹TextView组成，同样第二个参数root为null，与上面0-2item一样，LayoutParams没有实例化，所以最外层的layout_width、layout_height属性失效，但是它内部的TextView的属性是有效的，从图显示也可以看出TextView大小符合我们设置的大小。<br>分析4：position7item由LinearLayout包裹TextView组成，第二个参数root不为null，第三个参数为false，与上面分析2相同，设置了LayoutParams，宽高取决于TextView的layout_width、layout_height大小<br>分析5：打开注释会报错分析，这种情况是第二个参数不为null，第三个参数为true，可以简化成下面的流程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">final View temp = createViewFromTag(root, name, inflaterContext, attrs);</div><div class="line">ViewGroup.LayoutParams params = root.generateLayoutParams(attrs);</div><div class="line">if (root != null &amp;&amp; attachToRoot) &#123;</div><div class="line">    root.addView(temp, params);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里的root就是ListView，在它里面没有找到addView方法，再向上找，在AdapterView中的addView方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">public void addView(View child, LayoutParams params) &#123;</div><div class="line">    throw new UnsupportedOperationException(&quot;addView(View, LayoutParams) &quot;</div><div class="line">            + &quot;is not supported in AdapterView&quot;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>所以会报错</p>
+<h2 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h2><p>程序中的日志如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">05-17 00:15:55.504 18458 18458 D hcy     : position 0 layoutParams is null</div><div class="line">05-17 00:15:55.516 18458 18458 D hcy     : position 1 layoutParams is null</div><div class="line">05-17 00:15:55.522 18458 18458 D hcy     : position 2 layoutParams is null</div><div class="line">05-17 00:15:55.525 18458 18458 D hcy     : position 3 layoutParams.width is: 263 layoutParams.height is: 131</div><div class="line">05-17 00:15:55.534 18458 18458 D hcy     : position 4 layoutParams is null</div><div class="line">05-17 00:15:55.538 18458 18458 D hcy     : position 5 layoutParams is null</div><div class="line">05-17 00:15:55.542 18458 18458 D hcy     : position 6 layoutParams is null</div><div class="line">05-17 00:15:55.544 18458 18458 D hcy     : position 7 layoutParams.width is: -2 layoutParams.height is: -2</div></pre></td></tr></table></figure>
+<p>这也印证了当第二个参数为null时，layoutParams为null，其次item3的宽高根据不同设备显示值也有所不同，最后item7显示-2是几个意思？在ViewGroup中定义</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">public static final int WRAP_CONTENT = -2;</div></pre></td></tr></table></figure>
+<h2 id="随便提一下"><a href="#随便提一下" class="headerlink" title="随便提一下"></a>随便提一下</h2><p>在Activity中指定布局文件的时候，最外层的那个布局是可以指定大小的，layout_width和layout_height都是有作用的，根据上一篇的分析知道Android会自动在布局文件的最外层再嵌套一个FrameLayout，代码其实是这样的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mLayoutInflater.inflate(layoutResID, mContentParent);</div></pre></td></tr></table></figure>
+<p>这里的mContentParent是FrameLayout不为null，又回到上面的分析，那它为啥不报错呢？<br>在FrameLayout中没找到addView方法，继续向上查找，在它爹ViewGroup中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">public void addView(View child) &#123;</div><div class="line">    addView(child, -1);</div><div class="line">&#125;</div><div class="line"></div><div class="line">public void addView(View child, int index) &#123;</div><div class="line">    if (child == null) &#123;</div><div class="line">        throw new IllegalArgumentException(&quot;Cannot add a null child view to a ViewGroup&quot;);</div><div class="line">    &#125;</div><div class="line">    LayoutParams params = child.getLayoutParams();</div><div class="line">    if (params == null) &#123;</div><div class="line">        params = generateDefaultLayoutParams();</div><div class="line">        if (params == null) &#123;</div><div class="line">            throw new IllegalArgumentException(&quot;generateDefaultLayoutParams() cannot return null&quot;);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    addView(child, index, params);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>所以不会报错。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ul>
+<li>如果root为null，attachToRoot将失去作用，设置任何值都没有意义，加载的布局文件最外层的所有layout属性会失效，由父布局来默认指定.</li>
+<li>如果root不为null，未设置attachToRoot，attachToRoot默认为true</li>
+<li>如果root不为null，attachToRoot为true，会调用root的addView方法并返回root；attachToRoot为false，则根据传入的root为根标签temp设置LayoutParams并返回temp；</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+     
+     <div>    
+      
+      <ul class="post-copyright">
+         <li class="post-copyright-link">
+          <strong>本文作者：</strong>
+          <a href="/" title="欢迎访问 HuYounger 的个人博客">HuYounger</a>
+        </li>
+        <li class="post-copyright-link">
+          <strong>本文标题：</strong>
+          <a href="http://yoursite.com/2017/05/17/Android LayoutInflater源码分析/" title="Android LayoutInflater源码分析">Android LayoutInflater源码分析</a>
+        </li>
+        <li class="post-copyright-link">
+          <strong>本文链接：</strong>
+          <a href="http://yoursite.com/2017/05/17/Android LayoutInflater源码分析/" title="Android LayoutInflater源码分析">http://yoursite.com/2017/05/17/Android LayoutInflater源码分析/</a>
+        </li>
+        <li class="post-copyright-date">
+            <strong>发布时间：</strong>2017年5月17日 - 00时05分
+        </li>  
+        <li class="post-copyright-license">
+          <strong>版权声明： </strong>
+          本文由 HuYounger 原创，采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh" rel="license" target="_blank">保留署名-非商业性使用-禁止演绎 4.0-国际许可协议</a> </br>转载请保留以上声明信息！
+        </li>
+      </ul>
+    
+  </div>
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/05/16/Android setContentView源码分析/" rel="next" title="Android setContentView源码分析">
+                <i class="fa fa-chevron-left"></i> Android setContentView源码分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/05/20/Android DecorView绘制源码分析/" rel="prev" title="Android DecorView绘制源码分析">
+                Android DecorView绘制源码分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          
+            <img class="site-author-image" itemprop="image"
+              src="http://7xjvg5.com1.z0.glb.clouddn.com/avatar.jpeg"
+              alt="HuYounger" />
+          
+            <p class="site-author-name" itemprop="name">HuYounger</p>
+            <p class="site-description motion-element" itemprop="description">Less is more</p>
+        </div>
+
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+            
+              <a href="/archives/">
+            
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/Rkhcy" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>GitHub</a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Demo"><span class="nav-number">2.</span> <span class="nav-text">Demo</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">3.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LayoutInflater源码分析"><span class="nav-number">4.</span> <span class="nav-text">LayoutInflater源码分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题分析"><span class="nav-number">5.</span> <span class="nav-text">问题分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#日志"><span class="nav-number">6.</span> <span class="nav-text">日志</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#随便提一下"><span class="nav-number">7.</span> <span class="nav-text">随便提一下</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 &mdash; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">HuYounger</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+  <span class="post-meta-divider">|</span>
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.2</div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("rcy0CA7vKecGb0eQxcnHdO3i-gzGzoHsz", "N9PBf4dqgEeMJL7klXsAli0a");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
