@@ -1074,7 +1074,7 @@ pre .javascript .function {
   bottom: 19px;
 }
 .header {
-  background: url("http://7xjvg5.com1.z0.glb.clouddn.com/background.jpg");
+  background: url("../image/background.jpg");
 }
 .header-inner {
   position: relative;
@@ -1818,7 +1818,7 @@ pre .javascript .function {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #b69f34;
+  background: #6b3d1a;
 }
 .links-of-blogroll {
   font-size: 13px;
