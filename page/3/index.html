@@ -258,6 +258,160 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/01/13/Launcher Package变化监听机制(一)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="HuYounger">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://7xjvg5.com1.z0.glb.clouddn.com/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HuYounger's Note">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2016/01/13/Launcher Package变化监听机制(一)/" itemprop="url">Launcher Package变化监听机制(一)</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-01-13T00:00:00+08:00">
+                2016-01-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2016/01/13/Launcher Package变化监听机制(一)/" class="leancloud_visitors" data-flag-title="Launcher Package变化监听机制(一)">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>手机连上usb线,当电脑上有豌豆荚的时候,发现手机默认安装上了豌豆荚(桌面和菜单都装上了),就这个现象跟下源码查看其原理.</p>
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>应该是存在广播监听,当接收到安装应用的广播后在Launcher上更新UI(workspace和allapp),因此要找到注册广播以及具体操作的地方。<br>定位到LauncherModel.java中,该类主要负责Launcher中数据的处理.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">code path:android/packages/apps/Launcher3/src/com/android/launcher3/LauncherModel.java</div><div class="line"></div><div class="line">public void onPackageAdded(String packageName, UserHandleCompat user) &#123;</div><div class="line">        int op = PackageUpdatedTask.OP_ADD;</div><div class="line">        enqueuePackageUpdated(new PackageUpdatedTask(op, new String[] &#123; packageName &#125;,</div><div class="line">                user));</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>根据获取到的标志位执行enqueuePackageUpdated方法:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">void enqueuePackageUpdated(PackageUpdatedTask task) &#123;</div><div class="line">        sWorker.post(task);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>sWorker是个handler,调用handler的post方法去处理PackageUpdatedTask,PackageUpdatedTask实现了Runnable.在它的run()方法中会根据之前传递过来的标志位(ADD,UPDATE,REMOVE,UNAVALIBLE)做对应的操作.这里就以ADD举例(其他的类似)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">for (int i=0; i&lt;N; i++) &#123;</div><div class="line">    if (DEBUG_LOADERS) Log.d(TAG, &quot;mAllAppsList.addPackage &quot; + packages[i]);</div><div class="line">    mIconCache.updateIconsForPkg(packages[i], mUser);</div><div class="line">    mBgAllAppsList.addPackage(context, packages[i], mUser);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>先保存新增应用的图标信息,再把新增应用添加到一个集合中,接着</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">ArrayList&lt;AppInfo&gt; added = null;</div><div class="line">......(省略其他代码)</div><div class="line">if (mBgAllAppsList.added.size() &gt; 0) &#123;</div><div class="line">    added = new ArrayList&lt;AppInfo&gt;(mBgAllAppsList.added);</div><div class="line">    mBgAllAppsList.added.clear();</div><div class="line">&#125;</div><div class="line">......(省略其他代码)</div><div class="line">if (added != null) &#123;</div><div class="line">    addAppsToAllApps(context, added);</div><div class="line">    for (AppInfo ai : added) &#123;</div><div class="line">     addedOrUpdatedApps.put(ai.componentName, ai);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>定义了一个集合用来保存新增的应用表单,并通过addAppsToAllApps方法处理</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">public void addAppsToAllApps(final Context ctx, final ArrayList&lt;AppInfo&gt; allAppsApps) &#123;</div><div class="line">        final Callbacks callbacks = getCallback();</div><div class="line"></div><div class="line">        // Process the newly added applications and add them to the database first</div><div class="line">        Runnable r = new Runnable() &#123;</div><div class="line">            public void run() &#123;</div><div class="line">                runOnMainThread(new Runnable() &#123;</div><div class="line">                    public void run() &#123;</div><div class="line">                        Callbacks cb = getCallback();</div><div class="line">                        if (callbacks == cb &amp;&amp; cb != null) &#123;</div><div class="line">                            callbacks.bindAppsAdded(null, null, null, allAppsApps);</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;);</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line">        runOnWorkerThread(r);</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>这里的callback就是Launcher,原来还是通过回调Launcher的bindAppsAdded方法处理。那Launcher的bindAppsAdded又做了啥?</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">public void bindAppsAdded(final ArrayList&lt;Long&gt; newScreens,</div><div class="line">                              final ArrayList&lt;ItemInfo&gt; addNotAnimated,</div><div class="line">                              final ArrayList&lt;ItemInfo&gt; addAnimated,</div><div class="line">                              final ArrayList&lt;AppInfo&gt; addedApps) &#123;</div><div class="line">        Runnable r = new Runnable() &#123;</div><div class="line">            public void run() &#123;</div><div class="line">                bindAppsAdded(newScreens, addNotAnimated, addAnimated, addedApps);</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line">        if (waitUntilResume(r)) &#123;</div><div class="line">            return;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        // Add the new screens</div><div class="line">        if (newScreens != null) &#123;</div><div class="line">            bindAddScreens(newScreens);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        // We add the items without animation on non-visible pages, and with</div><div class="line">        // animations on the new page (which we will try and snap to).</div><div class="line">        if (addNotAnimated != null &amp;&amp; !addNotAnimated.isEmpty()) &#123;</div><div class="line">            bindItems(addNotAnimated, 0,</div><div class="line">                    addNotAnimated.size(), false);</div><div class="line">        &#125;</div><div class="line">        if (addAnimated != null &amp;&amp; !addAnimated.isEmpty()) &#123;</div><div class="line">            bindItems(addAnimated, 0,</div><div class="line">                    addAnimated.size(), true);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        // Remove the extra empty screen</div><div class="line">        mWorkspace.removeExtraEmptyScreen(false, false);</div><div class="line"></div><div class="line">        if (addedApps != null &amp;&amp; mAppsView != null) &#123;</div><div class="line">            mAppsView.addApps(addedApps);</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>这里的bindItems方法和mAppsView.addApps(addedApps)正好对应了前言提到的豌豆荚在桌面和菜单中生成图标.</p>
+<h2 id="桌面"><a href="#桌面" class="headerlink" title="桌面"></a>桌面</h2><p>先看下bindItems:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div></pre></td><td class="code"><pre><div class="line">public void bindItems(final ArrayList&lt;ItemInfo&gt; shortcuts, final int start, final int end,</div><div class="line">                          final boolean forceAnimateIcons) &#123;</div><div class="line">        Runnable r = new Runnable() &#123;</div><div class="line">            public void run() &#123;</div><div class="line">                bindItems(shortcuts, start, end, forceAnimateIcons);</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line">        if (waitUntilResume(r)) &#123;</div><div class="line">            return;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        // Get the list of added shortcuts and intersect them with the set of shortcuts here</div><div class="line">        final AnimatorSet anim = LauncherAnimUtils.createAnimatorSet();</div><div class="line">        final Collection&lt;Animator&gt; bounceAnims = new ArrayList&lt;Animator&gt;();</div><div class="line">        final boolean animateIcons = forceAnimateIcons &amp;&amp; canRunNewAppsAnimation();</div><div class="line">        Workspace workspace = mWorkspace;</div><div class="line">        long newShortcutsScreenId = -1;</div><div class="line">        for (int i = start; i &lt; end; i++) &#123;</div><div class="line">            final ItemInfo item = shortcuts.get(i);</div><div class="line"></div><div class="line">            // Short circuit if we are loading dock items for a configuration which has no dock</div><div class="line">            if (item.container == LauncherSettings.Favorites.CONTAINER_HOTSEAT &amp;&amp;</div><div class="line">                    mHotseat == null) &#123;</div><div class="line">                continue;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            final View view;</div><div class="line">            switch (item.itemType) &#123;</div><div class="line">                case LauncherSettings.Favorites.ITEM_TYPE_APPLICATION:</div><div class="line">                case LauncherSettings.Favorites.ITEM_TYPE_SHORTCUT:</div><div class="line">                    ShortcutInfo info = (ShortcutInfo) item;</div><div class="line">                    view = createShortcut(info);</div><div class="line"></div><div class="line">                    /*</div><div class="line">                     * TODO: FIX collision case</div><div class="line">                     */</div><div class="line">                    if (item.container == LauncherSettings.Favorites.CONTAINER_DESKTOP) &#123;</div><div class="line">                        CellLayout cl = mWorkspace.getScreenWithId(item.screenId);</div><div class="line">                        if (cl != null &amp;&amp; cl.isOccupied(item.cellX, item.cellY)) &#123;</div><div class="line">                            View v = cl.getChildAt(item.cellX, item.cellY);</div><div class="line">                            Object tag = v.getTag();</div><div class="line">                            String desc = &quot;Collision while binding workspace item: &quot; + item</div><div class="line">                                    + &quot;. Collides with &quot; + tag;</div><div class="line">                            if (LauncherAppState.isDogfoodBuild()) &#123;</div><div class="line">                                throw (new RuntimeException(desc));</div><div class="line">                            &#125; else &#123;</div><div class="line">                                Log.d(TAG, desc);</div><div class="line">                            &#125;</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                    break;</div><div class="line">                case LauncherSettings.Favorites.ITEM_TYPE_FOLDER:</div><div class="line">                    view = FolderIcon.fromXml(R.layout.folder_icon, this,</div><div class="line">                            (ViewGroup) workspace.getChildAt(workspace.getCurrentPage()),</div><div class="line">                            (FolderInfo) item, mIconCache);</div><div class="line">                    break;</div><div class="line">                default:</div><div class="line">                    throw new RuntimeException(&quot;Invalid Item Type&quot;);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            workspace.addInScreenFromBind(view, item.container, item.screenId, item.cellX,</div><div class="line">                    item.cellY, 1, 1);</div><div class="line">            if (animateIcons) &#123;</div><div class="line">                // Animate all the applications up now</div><div class="line">                view.setAlpha(0f);</div><div class="line">                view.setScaleX(0f);</div><div class="line">                view.setScaleY(0f);</div><div class="line">                bounceAnims.add(createNewAppBounceAnimation(view, i));</div><div class="line">                newShortcutsScreenId = item.screenId;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        if (animateIcons) &#123;</div><div class="line">            // Animate to the correct page</div><div class="line">            if (newShortcutsScreenId &gt; -1) &#123;</div><div class="line">                long currentScreenId = mWorkspace.getScreenIdForPageIndex(mWorkspace.getNextPage());</div><div class="line">                final int newScreenIndex = mWorkspace.getPageIndexForScreenId(newShortcutsScreenId);</div><div class="line">                final Runnable startBounceAnimRunnable = new Runnable() &#123;</div><div class="line">                    public void run() &#123;</div><div class="line">                        anim.playTogether(bounceAnims);</div><div class="line">                        anim.start();</div><div class="line">                    &#125;</div><div class="line">                &#125;;</div><div class="line">                if (newShortcutsScreenId != currentScreenId) &#123;</div><div class="line">                    // We post the animation slightly delayed to prevent slowdowns</div><div class="line">                    // when we are loading right after we return to launcher.</div><div class="line">                    mWorkspace.postDelayed(new Runnable() &#123;</div><div class="line">                        public void run() &#123;</div><div class="line">                            if (mWorkspace != null) &#123;</div><div class="line">                                mWorkspace.snapToPage(newScreenIndex);</div><div class="line">                                mWorkspace.postDelayed(startBounceAnimRunnable,</div><div class="line">                                        NEW_APPS_ANIMATION_DELAY);</div><div class="line">                            &#125;</div><div class="line">                        &#125;</div><div class="line">                    &#125;, NEW_APPS_PAGE_MOVE_DELAY);</div><div class="line">                &#125; else &#123;</div><div class="line">                    mWorkspace.postDelayed(startBounceAnimRunnable, NEW_APPS_ANIMATION_DELAY);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        workspace.requestLayout();</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>这段代码主要就是遍历集合列表取出item,判断item类型,若是应用或者快捷方式,调用createShortcut(info)生成一个图标,其实就是BubbleTextView,若是文件夹类型,则解析folder_icon布局生成一个文件夹的图标(第一次开机的时候可以在default_workspace中配置),之后调用 workspace.addInScreenFromBind(view, item.container, item.screenId, item.cellX,item.cellY, 1, 1);将图标添加到workspace上,最后再workspace.requestLayout();桌面上的显示就妥了.</p>
+<h2 id="菜单"><a href="#菜单" class="headerlink" title="菜单"></a>菜单</h2><p>再来分析下菜单里新增应用的更新, mAppsView.addApps(addedApps);这里的mAppsView是AllAppsContainerView</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">code path: android/packages/apps/Launcher3/src/com/android/launcher3/allapps/AllAppsContainerView.java</div><div class="line"></div><div class="line">public void addApps(List&lt;AppInfo&gt; apps) &#123;</div><div class="line">        mApps.addApps(apps);</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>接着又是几个方法的传递最后调用到AlphabeticalAppsList的updateAdapterItems()方法,其实Launcher的菜单就是个RecyclerView,代码较长就不贴了,基本思路就是更新Adapter,然后触发notifyDataSetChanged()完成界面更新.</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+     
+     <div>    
+      
+  </div>
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/01/03/Launcher加载流程/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -644,7 +798,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-count">23</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
