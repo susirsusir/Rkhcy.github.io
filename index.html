@@ -258,6 +258,213 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://rkhcy.github.io/2017/09/26/TransitionNote2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="HuYounger">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://7xjvg5.com1.z0.glb.clouddn.com/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="HuYounger's Note">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/09/26/TransitionNote2/" itemprop="url">Transition学习笔记2</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-26T00:00:00+08:00">
+                2017-09-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/09/26/TransitionNote2/" class="leancloud_visitors" data-flag-title="Transition学习笔记2">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+<div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在上篇笔记中对于Transition的框架和常用的API使用进行了分析，Transition最常用的是在界面过渡方面，本文继续学习Transition在界面过渡上的使用。在界面过渡上，Transition分为不带共享元素的Content Transition和带共享元素的ShareElement Transition。</p>
+<h3 id="Content-Transition"><a href="#Content-Transition" class="headerlink" title="Content Transition"></a>Content Transition</h3><p>先看下content transition的一个例子，在Google Play Games上的应用：</p>
+<p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition2_1.gif" style="zoom:75%"></p>
+<p>在经过学习后我们也可以设计出类似的效果，首先需要了解在界面过渡中涉及到的一些重要方法，从ActivtyA调用startActivity方法唤起ActivityB，到ActivityB按返回键返回ActivityA涉及到与Transition有关的方法</p>
+<p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition_A_to_B.png"></p>
+<ul>
+<li>ActivityA.exitTransition()</li>
+<li>ActivityB.enterTransition()</li>
+</ul>
+<p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition_B_to_A.png"></p>
+<ul>
+<li>ActivityB.returnTransition()</li>
+<li>ActivityA.reenterTransition()</li>
+</ul>
+<p>因此，只要我们在对应的方法中设置了Transition就可以了。在默认没有设置对应Transition的情况下，Material-theme应用的exitTransition为null，enterTransition为Fade，如果reenterTransition和returnTransition未设定，则分别对应exitTransition和enterTransition。</p>
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p>在style中添加<code>android:windowContentTransitions</code> 属性启用窗口内容转换(Material-theme应用默认为true)，指定该Activity的Transition</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&lt;!-- Base application theme. --&gt;</div><div class="line">&lt;style name=&quot;AppTheme&quot; parent=&quot;Theme.AppCompat.Light.DarkActionBar&quot;&gt;</div><div class="line">    &lt;!-- enable window content transitions --&gt;</div><div class="line">    &lt;item name=&quot;android:windowContentTransitions&quot;&gt;true&lt;/item&gt;</div><div class="line"></div><div class="line">    &lt;!-- specify enter and exit transitions --&gt;</div><div class="line">    &lt;!-- options are: explode, slide, fade --&gt;</div><div class="line">    &lt;item name=&quot;android:windowEnterTransition&quot;&gt;@transition/change_image_transform&lt;/item&gt;</div><div class="line">    &lt;item name=&quot;android:windowExitTransition&quot;&gt;@transition/change_image_transform&lt;/item&gt;</div><div class="line">&lt;/style&gt;</div></pre></td></tr></table></figure>
+<p>也可以在代码中指定</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">// inside your activity (if you did not enable transitions in your theme)</div><div class="line">getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);</div><div class="line">// set an enter transition</div><div class="line">getWindow().setEnterTransition(new Explode());</div><div class="line">// set an exit transition</div><div class="line">getWindow().setExitTransition(new Explode());</div></pre></td></tr></table></figure>
+<p>然后启动Acticity</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">startActivity(intent,</div><div class="line">              ActivityOptions.makeSceneTransitionAnimation(this).toBundle());</div></pre></td></tr></table></figure>
+<h4 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h4><p>这里在代码中指定ShareElementActivity的exitTransition:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">private void setupTransition() &#123;</div><div class="line">        Slide slide = new Slide(Gravity.LEFT);</div><div class="line">        slide.setDuration(1000);</div><div class="line">        slide.setInterpolator(new FastOutSlowInInterpolator());</div><div class="line">        getWindow().setExitTransition(slide);</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>使用xml方式指定PlanetDetailActivity的enterTransition：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</div><div class="line">&lt;transitionSet xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;&gt;</div><div class="line">    &lt;slide</div><div class="line">        android:duration=&quot;1000&quot;</div><div class="line">        android:interpolator=&quot;@android:interpolator/fast_out_slow_in&quot;</div><div class="line">        android:slideEdge=&quot;bottom&quot;&gt;</div><div class="line">        &lt;targets&gt;</div><div class="line">            &lt;target android:targetId=&quot;@id/content_container&quot;/&gt;</div><div class="line">        &lt;/targets&gt;</div><div class="line">    &lt;/slide&gt;</div><div class="line">    &lt;slide</div><div class="line">        android:duration=&quot;1000&quot;</div><div class="line">        android:interpolator=&quot;@android:interpolator/fast_out_slow_in&quot;</div><div class="line">        android:slideEdge=&quot;top&quot;&gt;</div><div class="line">        &lt;targets&gt;</div><div class="line">            &lt;target android:targetId=&quot;@id/image_container&quot;/&gt;</div><div class="line">        &lt;/targets&gt;</div><div class="line">    &lt;/slide&gt;</div><div class="line">&lt;/transitionSet&gt;</div></pre></td></tr></table></figure>
+<p>运行效果如下：</p>
+<p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition2_3.gif" style="zoom:50%"></p>
+<p>上图动画有两个问题:</p>
+<p>1.ShareElementActivity的exitTransition还没完全走完PlanetDetailActivity的enterTransition就执行了，PlanetDetailActivity的returnTransition还没完全走完ShareElementActivity的reenterTransition就执行了；</p>
+<p>2.状态栏和导航栏的动画不太协调;</p>
+<p>问题1是因为默认情况下enter/return transition会比exit/reenter transition完全结束前稍微快一点运行，如果想让前者完全运行完后者再进来，可以在代码中调用<code>Window</code>的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">setWindowAllowEnterTransitionOverlap(false)</div><div class="line">setWindowAllowReturnTransitionOverlap(false)</div></pre></td></tr></table></figure>
+<p>或者在xml中设置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;item name=&quot;android:windowAllowEnterTransitionOverlap&quot;&gt;false&lt;/item&gt; </div><div class="line">&lt;item name=&quot;android:windowAllowReturnTransitionOverlap&quot;&gt;false&lt;/item&gt;</div></pre></td></tr></table></figure>
+<p>运行如下：</p>
+<p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition2_2.gif" style="zoom:50%"></p>
+<p>再看下问题2，默认情况下状态栏和标题栏也会参与动画(如果有导航栏也会，测试机默认木有导航栏)，当我们把xxxoverlap属性设为false后就看得比较明显了，如果不想让它们参与动画通过<code>excludeTarget()</code>将其排除，在代码中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">private void setupTransition() &#123;</div><div class="line">    Slide slide = new Slide(Gravity.LEFT);</div><div class="line">    slide.setDuration(1000);</div><div class="line">    slide.setInterpolator(new FastOutSlowInInterpolator());</div><div class="line">    slide.excludeTarget(android.R.id.statusBarBackground, true);</div><div class="line">    slide.excludeTarget(android.R.id.navigationBarBackground, true);</div><div class="line">    slide.excludeTarget(R.id.appbar,true);</div><div class="line">    getWindow().setExitTransition(slide);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>或者在xml中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">&lt;slide xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</div><div class="line">    android:slideEdge=&quot;left&quot;</div><div class="line">    android:interpolator=&quot;@android:interpolator/fast_out_slow_in&quot;</div><div class="line">    android:duration=&quot;1000&quot;&gt;</div><div class="line"></div><div class="line">    &lt;targets&gt;</div><div class="line">        &lt;!-- if using a custom Toolbar container, specify the ID of the AppBarLayout --&gt;</div><div class="line">        &lt;target android:excludeId=&quot;@id/appbar&quot; /&gt;</div><div class="line">        &lt;target android:excludeId=&quot;@android:id/statusBarBackground&quot;/&gt;</div><div class="line">        &lt;target android:excludeId=&quot;@android:id/navigationBarBackground&quot;/&gt;</div><div class="line">    &lt;/targets&gt;</div><div class="line"></div><div class="line">&lt;/slide&gt;</div></pre></td></tr></table></figure>
+<p>效果如下：</p>
+<p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition2_4.gif" style="zoom:50%"></p>
+<h4 id="具体流程"><a href="#具体流程" class="headerlink" title="具体流程"></a>具体流程</h4><p>ShareElementActivity startActivity()<br>1.确定需要执行exit Transition的target View<br>2.Transition的captureStartValues()获取target View Visibility的值(此时为VISIBLE)<br>3.将target View Visibility的值设为INVISIBLE<br>4.Transition的captureEndValues()获取target View Visibility的值(此时为INVISIBLE)<br>5.Transition的createAnimator()根据前后Visibility的属性值变化创建动画</p>
+<p>PlanetDetailActivity Activity 开始<br>1.确定需要执行enter Transition的target View<br>2.Transition的captureStartValues()获取获取target View Visibility的，初始化为INVISIBLE<br>3.将target View Visibility的值设为VISIBLE<br>4.Transition的captureEndValues()获取target View Visibility的值(此时为VISIBLE)<br>5.Transition的createAnimator()根据前后Visibility的属性值变化创建动画</p>
+<h3 id="ShareElement-Transition"><a href="#ShareElement-Transition" class="headerlink" title="ShareElement Transition"></a>ShareElement Transition</h3><p>shareElement Transition的例子</p>
+<p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition_app1.gif" style="zoom:75%"></p>
+<p>shareElement Transition指的是共享元素从activity/fragment到其他activity/fragment时的动画</p>
+<p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/shared_element.png"></p>
+<p>有了上面的分析看名字应该也猜得出方法对应的功能了，如果没有设置exit/enter shared element transitions，默认为 <a href="https://github.com/android/platform_frameworks_base/blob/lollipop-release/core/res/res/transition/move.xml" target="_blank" rel="external"><code>@android:transition/move</code></a>，上面的Content Transition是根据Visibility的变化创建动画，而shareElement Transition是根据大小，位置，和外观的变化创建动画，如chanageBounds、changeTransform、ChangeClipBounds、 ChangeImageTransform等，具体API使用和效果可以参考上篇。指定shareElement Transition可以通过代码形式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">getWindow().setSharedElementEnterTransition();</div><div class="line">getWindow().setSharedElementExitTransition();</div><div class="line">getWindow().setSharedElementReturnTransition();</div><div class="line">getWindow().setSharedElementReenterTransition();</div></pre></td></tr></table></figure>
+<p>也可以通过xml形式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;!-- Base application theme. --&gt;</div><div class="line">&lt;style name=&quot;AppTheme&quot; parent=&quot;Theme.AppCompat.Light.DarkActionBar&quot;&gt;</div><div class="line">    &lt;!-- specify shared element transitions --&gt;</div><div class="line">    &lt;item name=&quot;android:windowSharedElementEnterTransition&quot;&gt;</div><div class="line">      @transition/change_image_transform&lt;/item&gt;</div><div class="line">    &lt;item name=&quot;android:windowSharedElementExitTransition&quot;&gt;</div><div class="line">      @transition/change_image_transform&lt;/item&gt;</div><div class="line">&lt;/style&gt;</div></pre></td></tr></table></figure>
+<p>然后启动Acticity</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">Intent intent = new Intent(this, DetailsActivity.class);</div><div class="line">// Pass data object in the bundle and populate details activity.</div><div class="line">intent.putExtra(DetailsActivity.EXTRA_CONTACT, contact);</div><div class="line">ActivityOptionsCompat options = ActivityOptionsCompat.</div><div class="line">    makeSceneTransitionAnimation(this, (View)ivProfile, &quot;profile&quot;);</div><div class="line">startActivity(intent, options.toBundle());</div></pre></td></tr></table></figure>
+<p>在布局文件中对于要共享的View添加<code>android:transitionName</code>且保持一致，如果要共享的View有点多，可以通过Pair，Pair\<view,string\>存储着共享View和View的名称，使用如下</view,string\></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">Intent intent = new Intent(context, DetailsActivity.class);</div><div class="line">intent.putExtra(DetailsActivity.EXTRA_CONTACT, contact);</div><div class="line">Pair&lt;View, String&gt; p1 = Pair.create((View)ivProfile, &quot;profile&quot;);</div><div class="line">Pair&lt;View, String&gt; p2 = Pair.create(vPalette, &quot;palette&quot;);</div><div class="line">Pair&lt;View, String&gt; p3 = Pair.create((View)tvName, &quot;text&quot;);</div><div class="line">ActivityOptionsCompat options = ActivityOptionsCompat.</div><div class="line">    makeSceneTransitionAnimation(this, p1, p2, p3);</div><div class="line">startActivity(intent, options.toBundle());</div></pre></td></tr></table></figure>
+<h4 id="例子-1"><a href="#例子-1" class="headerlink" title="例子"></a>例子</h4><p>在PlanetDetailActivity的theme中添加SharedElementEnterTransition </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;item name=&quot;android:windowSharedElementEnterTransition&quot;&gt;</div><div class="line">@transition/change_image_transform</div><div class="line">&lt;/item&gt;</div></pre></td></tr></table></figure>
+<p>change_image_transform.xml</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;</div><div class="line">&lt;transitionSet xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;&gt;</div><div class="line">    &lt;changeBounds</div><div class="line">        android:duration=&quot;1000&quot;</div><div class="line">        android:interpolator=&quot;@android:interpolator/fast_out_slow_in&quot;/&gt;</div><div class="line">    &lt;changeImageTransform</div><div class="line">        android:duration=&quot;1000&quot;</div><div class="line">        android:interpolator=&quot;@android:interpolator/fast_out_slow_in&quot;/&gt;</div><div class="line">&lt;/transitionSet&gt;</div></pre></td></tr></table></figure>
+<p>执行效果：</p>
+<p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition2_6.gif" style="zoom:50%"></p>
+<h4 id="具体流程-1"><a href="#具体流程-1" class="headerlink" title="具体流程"></a>具体流程</h4><p>从图上看，好像图片是从一个ShareElementActivity”传递”到另一个PlanetDetailActivity，实际上真正负责绘制都发生在PlanetDetailActivity上：</p>
+<p>1.ShareElementActivity调用startActivity()后PlanetDetailActivity处于透明状态</p>
+<p>2.Transition收集ShareElementActivity中共享View的初识状态，并传递给PlanetDetailActivity</p>
+<p>3.Transition收集PlanetDetailActivity中共享View的最终状态</p>
+<p>4.Transition根据状态改变创建动画</p>
+<p>5.Transition隐藏ShareElementActivity，随着PlanetDetailActivity的共享View运动到指定位置，PlanetDetailActivity的背景在ShareElementActivity上淡入，并随着动画完成而完全可见。</p>
+<p>我们可以通过修改Activity背景淡入淡出时间来验证，在PlanetDetailActivity中加入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">getWindow().setTransitionBackgroundFadeDuration(2000);</div></pre></td></tr></table></figure>
+<p>为了更直观，把ShareElementActivity的exitTransition先注释掉，运行效果：</p>
+<p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition2_7.gif" style="zoom:50%"></p>
+<p>可以看到，PlanetDetailActivity确实像盖在ShareElementActivity上，这里用到了 <a href="https://developer.android.com/reference/android/view/ViewOverlay.html" target="_blank" rel="external">ViewOverlay</a>，原理简单来说就是在其他View上draw，共享View利用该技术可以实现画在其他View上。我们可以通过<code>Window</code>的<code>setSharedElementsUseOverlay(false)</code>来关闭该功能，不过这样一来会使最终结果和你预想的不一致，默认该值为true。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+     
+     <div>    
+      
+  </div>
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://rkhcy.github.io/2017/09/21/TransitionNote/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -393,10 +600,11 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">TransitionManager.beginDelayedTransition(mRoot, new Explode());</div><div class="line">int vis = mViews.get(0).getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE;</div><div class="line">for (View view : mViews) &#123;</div><div class="line">    view.setVisibility(vis);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition1_10.gif" style="zoom:50%"></p>
 <h4 id="Fade"><a href="#Fade" class="headerlink" title="Fade"></a>Fade</h4><p>对应xml tag为<code>fade</code>，作用对象：View的Visibility</p>
-<p>可以在初始化是指定IN或者OUT分别对应淡入和淡出，若不指定默认为淡入淡出效果</p>
+<p>可以在初始化时指定IN或者OUT分别对应淡入和淡出，也可以通过fade.setMode方法设置，若不指定默认为淡入淡出效果</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">TransitionManager.beginDelayedTransition(mRoot, new Fade());</div><div class="line">int vis = mViews.get(0).getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE;</div><div class="line">for (View view : mViews) &#123;</div><div class="line">    view.setVisibility(vis);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition1_1.11.gif" style="zoom:50%"></p>
 <h4 id="Slide"><a href="#Slide" class="headerlink" title="Slide"></a>Slide</h4><p>对应xml tag为<code>slide</code>，作用对象：View的Visibility</p>
+<p>可以初始化时传入Gravity.XX，也可以通过slide.setSlideEdge方法设置，默认方向为Gravity.BOTTOM</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">TransitionManager.beginDelayedTransition(mRoot, new Slide());</div><div class="line">int vis = mViews.get(0).getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE;</div><div class="line">for (View view : mViews) &#123;</div><div class="line">    view.setVisibility(vis);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition1_1.12.gif" style="zoom:50%"></p>
 <h4 id="TransitionSet"><a href="#TransitionSet" class="headerlink" title="TransitionSet"></a>TransitionSet</h4><p>对应xml tag为<code>transitionSet</code></p>
@@ -1860,157 +2068,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://rkhcy.github.io/2017/05/20/Android DecorView绘制源码分析/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="HuYounger">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="http://7xjvg5.com1.z0.glb.clouddn.com/avatar.jpeg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="HuYounger's Note">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/05/20/Android DecorView绘制源码分析/" itemprop="url">Android DecorView绘制源码分析</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-20T00:00:00+08:00">
-                2017-05-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2017/05/20/Android DecorView绘制源码分析/" class="leancloud_visitors" data-flag-title="Android DecorView绘制源码分析">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-<div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>通过前面的分析，在Activity中执行setContentView方法后会执行PhoneWindow的setContentView，在该方法中会生成DecorView 组件作为应用窗口的顶层视图，DecorView 是PhoneWindow的内部类，继承至FrameLayout，DecorView 会添加一个id为content的FrameLayout作为根布局，Activity的xml文件通过LayoutInflater的inflate方法解析成View树添加到id为content的FrameLayout中，那么这里的DecorView是怎么被添加到窗口并显示出来的呢？</p>
-<h2 id="ActivityThread-handleResumeActivity"><a href="#ActivityThread-handleResumeActivity" class="headerlink" title="ActivityThread handleResumeActivity()"></a>ActivityThread handleResumeActivity()</h2><p>Activity的启动流程学习作为将来的TODO项目，在ActivityThread中，当activity对象被创建完毕后，会调用handleResumeActivity方法将顶层视图DecorView添加到PhoneWindow窗口</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div></pre></td><td class="code"><pre><div class="line">源码路径：SDK/sources/android-24/android/app/ActivityThread.java</div><div class="line">    final void handleResumeActivity(IBinder token,</div><div class="line">            boolean clearHide, boolean isForward, boolean reallyResume, int seq, String reason) &#123;</div><div class="line">        //ActivityClientRecord对象保存了Activity的信息</div><div class="line">        ActivityClientRecord r = mActivities.get(token);</div><div class="line">        if (!checkAndUpdateLifecycleSeq(seq, r, &quot;resumeActivity&quot;)) &#123;</div><div class="line">            return;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        // If we are getting ready to gc after going to the background, well</div><div class="line">        // we are back active so skip it.</div><div class="line">        unscheduleGcIdler();</div><div class="line">        mSomeActivitiesChanged = true;</div><div class="line"></div><div class="line">        // TODO Push resumeArgs into the activity for consideration</div><div class="line">        r = performResumeActivity(token, clearHide, reason);</div><div class="line"></div><div class="line">        if (r != null) &#123;</div><div class="line">            //获取Activity对象</div><div class="line">            final Activity a = r.activity;</div><div class="line"></div><div class="line">            final int forwardBit = isForward ?</div><div class="line">                    WindowManager.LayoutParams.SOFT_INPUT_IS_FORWARD_NAVIGATION : 0;</div><div class="line"></div><div class="line">            // If the window hasn&apos;t yet been added to the window manager,</div><div class="line">            // and this guy didn&apos;t finish itself or start another activity,</div><div class="line">            // then go ahead and add the window.</div><div class="line">            boolean willBeVisible = !a.mStartedActivity;</div><div class="line">            if (!willBeVisible) &#123;</div><div class="line">                try &#123;</div><div class="line">                    willBeVisible = ActivityManagerNative.getDefault().willActivityBeVisible(</div><div class="line">                            a.getActivityToken());</div><div class="line">                &#125; catch (RemoteException e) &#123;</div><div class="line">                    throw e.rethrowFromSystemServer();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            if (r.window == null &amp;&amp; !a.mFinished &amp;&amp; willBeVisible) &#123;</div><div class="line">                //获取Activity对应的PhoneWindow对象</div><div class="line">                r.window = r.activity.getWindow();</div><div class="line">                //获取顶层布局DecorView对象</div><div class="line">                View decor = r.window.getDecorView();</div><div class="line">                //设为不可见</div><div class="line">                decor.setVisibility(View.INVISIBLE);</div><div class="line">                //获取WindowManager</div><div class="line">                ViewManager wm = a.getWindowManager();</div><div class="line">                //获取PhoneWindow的LayoutParams</div><div class="line">                WindowManager.LayoutParams l = r.window.getAttributes();</div><div class="line">                a.mDecor = decor;</div><div class="line">                l.type = WindowManager.LayoutParams.TYPE_BASE_APPLICATION;</div><div class="line">                l.softInputMode |= forwardBit;</div><div class="line">                if (r.mPreserveWindow) &#123;</div><div class="line">                    a.mWindowAdded = true;</div><div class="line">                    r.mPreserveWindow = false;</div><div class="line">                    // Normally the ViewRoot sets up callbacks with the Activity</div><div class="line">                    // in addView-&gt;ViewRootImpl#setView. If we are instead reusing</div><div class="line">                    // the decor view we have to notify the view root that the</div><div class="line">                    // callbacks may have changed.</div><div class="line">                    ViewRootImpl impl = decor.getViewRootImpl();</div><div class="line">                    if (impl != null) &#123;</div><div class="line">                        impl.notifyChildRebuilt();</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                if (a.mVisibleFromClient &amp;&amp; !a.mWindowAdded) &#123;</div><div class="line">                    //DecorView已经添加到窗口</div><div class="line">                    a.mWindowAdded = true;</div><div class="line">                    //将顶层布局DecorView添加到窗口中</div><div class="line">                    wm.addView(decor, l);</div><div class="line">                &#125;</div><div class="line"></div><div class="line">            // If the window has already been added, but during resume</div><div class="line">            // we started another activity, then don&apos;t yet make the</div><div class="line">            // window visible.</div><div class="line">            &#125; else if (!willBeVisible) &#123;</div><div class="line">                r.hideForNow = true;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            // Get rid of anything left hanging around.</div><div class="line">            cleanUpPendingRemoveWindows(r, false /* force */);</div><div class="line"></div><div class="line">            // The window is now visible if it has been added, we are not</div><div class="line">            // simply finishing, and we are not starting another activity.</div><div class="line">            if (!r.activity.mFinished &amp;&amp; willBeVisible</div><div class="line">                    &amp;&amp; r.activity.mDecor != null &amp;&amp; !r.hideForNow) &#123;</div><div class="line">                if (r.newConfig != null) &#123;</div><div class="line">                    performConfigurationChangedForActivity(r, r.newConfig, REPORT_TO_ACTIVITY);</div><div class="line">                    r.newConfig = null;</div><div class="line">                &#125;</div><div class="line">                WindowManager.LayoutParams l = r.window.getAttributes();</div><div class="line">                if ((l.softInputMode</div><div class="line">                        &amp; WindowManager.LayoutParams.SOFT_INPUT_IS_FORWARD_NAVIGATION)</div><div class="line">                        != forwardBit) &#123;</div><div class="line">                    l.softInputMode = (l.softInputMode</div><div class="line">                            &amp; (~WindowManager.LayoutParams.SOFT_INPUT_IS_FORWARD_NAVIGATION))</div><div class="line">                            | forwardBit;</div><div class="line">                    if (r.activity.mVisibleFromClient) &#123;</div><div class="line">                        ViewManager wm = a.getWindowManager();</div><div class="line">                        View decor = r.window.getDecorView();</div><div class="line">                        wm.updateViewLayout(decor, l);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                r.activity.mVisibleFromServer = true;</div><div class="line">                mNumVisibleActivities++;</div><div class="line">                if (r.activity.mVisibleFromClient) &#123;</div><div class="line">                    //设置顶层布局DecorView可见</div><div class="line">                    r.activity.makeVisible();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            if (!r.onlyLocalRequest) &#123;</div><div class="line">                r.nextIdle = mNewActivities;</div><div class="line">                mNewActivities = r;</div><div class="line">                Looper.myQueue().addIdleHandler(new Idler());</div><div class="line">            &#125;</div><div class="line">            r.onlyLocalRequest = false;</div><div class="line"></div><div class="line">            // Tell the activity manager we have resumed.</div><div class="line">            if (reallyResume) &#123;</div><div class="line">                try &#123;</div><div class="line">                    ActivityManagerNative.getDefault().activityResumed(token);</div><div class="line">                &#125; catch (RemoteException ex) &#123;</div><div class="line">                    throw ex.rethrowFromSystemServer();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">        &#125; else &#123;</div><div class="line">            // If an exception was thrown when trying to resume, then</div><div class="line">            // just end this activity.</div><div class="line">            try &#123;</div><div class="line">                ActivityManagerNative.getDefault()</div><div class="line">                    .finishActivity(token, Activity.RESULT_CANCELED, null,</div><div class="line">                            Activity.DONT_FINISH_TASK_WITH_ACTIVITY);</div><div class="line">            &#125; catch (RemoteException ex) &#123;</div><div class="line">                throw ex.rethrowFromSystemServer();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
-<h2 id="WindowManagerImpl-addView"><a href="#WindowManagerImpl-addView" class="headerlink" title="WindowManagerImpl addView()"></a>WindowManagerImpl addView()</h2><p>通过wm的addView方法，传入顶层视图DecorView和LayoutParams，将顶层布局DecorView添加到窗口中。这里的vm是ViewManager，具体实现是WindowManagerImpl类</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">关系:</div><div class="line">public interface WindowManager extends ViewManager </div><div class="line">public final class WindowManagerImpl implements WindowManager</div><div class="line"></div><div class="line">源码路径: SDK/sources/android-24/android/view/WindowManagerImpl.java</div><div class="line">    public void addView(@NonNull View view, @NonNull ViewGroup.LayoutParams params) &#123;</div><div class="line">        applyDefaultToken(params);</div><div class="line">        mGlobal.addView(view, params, mContext.getDisplay(), mParentWindow);</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
-<p>这里直接调用了mGlobal的addView方法，继续跟进去看下</p>
-<h2 id="WindowManagerGlobal-addView"><a href="#WindowManagerGlobal-addView" class="headerlink" title="WindowManagerGlobal addView()"></a>WindowManagerGlobal addView()</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div></pre></td><td class="code"><pre><div class="line">源码路径: SDK/sources/android-24/android/view/WindowManagerGlobal.java</div><div class="line"></div><div class="line">    public void addView(View view, ViewGroup.LayoutParams params,</div><div class="line">            Display display, Window parentWindow) &#123;</div><div class="line"></div><div class="line">        final WindowManager.LayoutParams wparams = (WindowManager.LayoutParams) params;</div><div class="line">        if (parentWindow != null) &#123;</div><div class="line">            parentWindow.adjustLayoutParamsForSubWindow(wparams);</div><div class="line">        &#125; else &#123;</div><div class="line">            // If there&apos;s no parent, then hardware acceleration for this view is</div><div class="line">            // set from the application&apos;s hardware acceleration setting.</div><div class="line">            final Context context = view.getContext();</div><div class="line">            if (context != null</div><div class="line">                    &amp;&amp; (context.getApplicationInfo().flags</div><div class="line">                            &amp; ApplicationInfo.FLAG_HARDWARE_ACCELERATED) != 0) &#123;</div><div class="line">                wparams.flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        ViewRootImpl root;</div><div class="line">        View panelParentView = null;</div><div class="line"></div><div class="line">        synchronized (mLock) &#123;</div><div class="line">            // Start watching for system property changes.</div><div class="line">            if (mSystemPropertyUpdater == null) &#123;</div><div class="line">                mSystemPropertyUpdater = new Runnable() &#123;</div><div class="line">                    @Override public void run() &#123;</div><div class="line">                        synchronized (mLock) &#123;</div><div class="line">                            for (int i = mRoots.size() - 1; i &gt;= 0; --i) &#123;</div><div class="line">                                mRoots.get(i).loadSystemProperties();</div><div class="line">                            &#125;</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;;</div><div class="line">                SystemProperties.addChangeCallback(mSystemPropertyUpdater);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            int index = findViewLocked(view, false);</div><div class="line">            if (index &gt;= 0) &#123;</div><div class="line">                if (mDyingViews.contains(view)) &#123;</div><div class="line">                    // Don&apos;t wait for MSG_DIE to make it&apos;s way through root&apos;s queue.</div><div class="line">                    mRoots.get(index).doDie();</div><div class="line">                &#125; else &#123;</div><div class="line">                    throw new IllegalStateException(&quot;View &quot; + view</div><div class="line">                            + &quot; has already been added to the window manager.&quot;);</div><div class="line">                &#125;</div><div class="line">                // The previous removeView() had not completed executing. Now it has.</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            // If this is a panel window, then find the window it is being</div><div class="line">            // attached to for future reference.</div><div class="line">            if (wparams.type &gt;= WindowManager.LayoutParams.FIRST_SUB_WINDOW &amp;&amp;</div><div class="line">                    wparams.type &lt;= WindowManager.LayoutParams.LAST_SUB_WINDOW) &#123;</div><div class="line">                final int count = mViews.size();</div><div class="line">                for (int i = 0; i &lt; count; i++) &#123;</div><div class="line">                    if (mRoots.get(i).mWindow.asBinder() == wparams.token) &#123;</div><div class="line">                        panelParentView = mViews.get(i);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            //实例化ViewRootImpl对象</div><div class="line">            root = new ViewRootImpl(view.getContext(), display);</div><div class="line">            //顶层视图DecorView设置LayoutParams</div><div class="line">            view.setLayoutParams(wparams);</div><div class="line"></div><div class="line">            mViews.add(view);</div><div class="line">            mRoots.add(root);</div><div class="line">            mParams.add(wparams);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        // do this last because it fires off messages to start doing things</div><div class="line">        try &#123;</div><div class="line">            //将顶层视图DecorView添加到root中</div><div class="line">            root.setView(view, wparams, panelParentView);</div><div class="line">        &#125; catch (RuntimeException e) &#123;</div><div class="line">            // BadTokenException or InvalidDisplayException, clean up.</div><div class="line">            synchronized (mLock) &#123;</div><div class="line">                final int index = findViewLocked(view, false);</div><div class="line">                if (index &gt;= 0) &#123;</div><div class="line">                    removeViewLocked(index, true);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            throw e;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
-<h2 id="ViewRootImpl-setView"><a href="#ViewRootImpl-setView" class="headerlink" title="ViewRootImpl setView()"></a>ViewRootImpl setView()</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">源码路径: SDK/sources/android-24/android/view/ViewRootImpl.java</div><div class="line">    /**</div><div class="line">     * We have one child</div><div class="line">     */</div><div class="line">        public void setView(View view, WindowManager.LayoutParams attrs, View panelParentView) &#123;</div><div class="line">        synchronized (this) &#123;</div><div class="line">            if (mView == null) &#123;</div><div class="line">                mView = view;</div><div class="line">                ......</div><div class="line">                mAdded = true;</div><div class="line">                ......</div><div class="line">                // Schedule the first layout -before- adding to the window</div><div class="line">                // manager, to make sure we do the relayout before receiving</div><div class="line">                // any other events from the system.</div><div class="line">                requestLayout();</div><div class="line">                ......</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
-<p>该方法代码有点长，将DecorView赋给这里的View，并标记DecorView已添加到ViewRootImpl，之后调用requestLayout请求布局。</p>
-<h2 id="ViewRootImpl-requestLayout"><a href="#ViewRootImpl-requestLayout" class="headerlink" title="ViewRootImpl requestLayout()"></a>ViewRootImpl requestLayout()</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">public void requestLayout() &#123;</div><div class="line">    if (!mHandlingLayoutInLayoutRequest) &#123;</div><div class="line">        checkThread();</div><div class="line">        mLayoutRequested = true;</div><div class="line">        scheduleTraversals();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h2 id="ViewRootImpl-scheduleTraversals"><a href="#ViewRootImpl-scheduleTraversals" class="headerlink" title="ViewRootImpl scheduleTraversals()"></a>ViewRootImpl scheduleTraversals()</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">void scheduleTraversals() &#123;</div><div class="line">    if (!mTraversalScheduled) &#123;</div><div class="line">        mTraversalScheduled = true;</div><div class="line">        mTraversalBarrier = mHandler.getLooper().getQueue().postSyncBarrier();</div><div class="line">        mChoreographer.postCallback(</div><div class="line">                Choreographer.CALLBACK_TRAVERSAL, mTraversalRunnable, null);</div><div class="line">        if (!mUnbufferedInputDispatch) &#123;</div><div class="line">            scheduleConsumeBatchedInput();</div><div class="line">        &#125;</div><div class="line">        notifyRendererOfFramePending();</div><div class="line">        pokeDrawLockIfNeeded();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>在该方法中把mTraversalRunnable post到消息队列中，查看Choreographer的postCallback方法，最终会调用到postCallbackDelayedInternal，实质还是通过Handler来处理，查看下mTraversalRunnable 做了什么</p>
-<h2 id="ViewRootImpl-TraversalRunnable"><a href="#ViewRootImpl-TraversalRunnable" class="headerlink" title="ViewRootImpl TraversalRunnable"></a>ViewRootImpl TraversalRunnable</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">final class TraversalRunnable implements Runnable &#123;</div><div class="line">    @Override</div><div class="line">    public void run() &#123;</div><div class="line">        doTraversal();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h2 id="ViewRootImpl-doTraversal"><a href="#ViewRootImpl-doTraversal" class="headerlink" title="ViewRootImpl doTraversal()"></a>ViewRootImpl doTraversal()</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">void doTraversal() &#123;</div><div class="line">    if (mTraversalScheduled) &#123;</div><div class="line">        mTraversalScheduled = false;</div><div class="line">        mHandler.getLooper().getQueue().removeSyncBarrier(mTraversalBarrier);</div><div class="line"></div><div class="line">        if (mProfile) &#123;</div><div class="line">            Debug.startMethodTracing(&quot;ViewAncestor&quot;);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        performTraversals();</div><div class="line"></div><div class="line">        if (mProfile) &#123;</div><div class="line">            Debug.stopMethodTracing();</div><div class="line">            mProfile = false;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这里会调用performTraversals()，performTraversals()负责整个View树的绘制流程，是很关键的一步，之后结合自定义View分析。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过上面的分析，在ActivityThread中，当activity对象创建完毕后，会将DecorView添加到Window中，同时会创建 ViewRootImpl 对象，并将 ViewRootImpl 对象和 DecorView 建立关联，最终由ViewRootImpl负责整个View树的绘制。</p>
-<p><a href="http://7xjvg5.com1.z0.glb.clouddn.com/DecorView.png" target="_blank" rel="external"><img src="http://7xjvg5.com1.z0.glb.clouddn.com/DecorView.png" alt="img"></a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-     
-     <div>    
-      
-  </div>
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2064,7 +2121,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-count">26</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
