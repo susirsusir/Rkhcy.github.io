@@ -103,7 +103,7 @@
 <meta property="og:site_name" content="HuYounger&#39;s Note">
 <meta property="og:description" content="概述事件分发一直是一知半解的状态，最近在复习Launcher的拖拽机制，其中很多地方都涉及到事件分发，索性把事件分发这一块拿出来再学一遍。 DemoMainActivity.java 12345678910111213141516171819202122232425262728293031323334353637383940414243444546public class MainActivity">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2017-09-10T15:16:35.000Z">
+<meta property="og:updated_time" content="2017-10-11T01:46:21.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android View事件分发机制">
 <meta name="twitter:description" content="概述事件分发一直是一知半解的状态，最近在复习Launcher的拖拽机制，其中很多地方都涉及到事件分发，索性把事件分发这一块拿出来再学一遍。 DemoMainActivity.java 12345678910111213141516171819202122232425262728293031323334353637383940414243444546public class MainActivity">
@@ -347,7 +347,7 @@
 <p>代码很简单，点击下MyTextView 打印如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">03-01 00:07:19.369 11770 11770 D hcy     : MyTextView onTouch ACTION_DOWN</div><div class="line">03-01 00:07:19.417 11770 11770 D hcy     : MyTextView onTouch ACTION_UP</div><div class="line">03-01 00:07:19.422 11770 11770 D hcy     : MyTextView onClick</div></pre></td></tr></table></figure>
 <h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>从上面的日志来看onTouch先于onClick 执行，onTouch方法执行了两次，对应手指的DOWN和UP，之后才执行onClick，onTouch有返回值，默认为false，onClick无返回值。</p>
-<p>将onTouch的返回值改为false，点击下MyTextView 打印如下：</p>
+<p>将onTouch的返回值改为true，点击下MyTextView 打印如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">03-01 00:20:52.987 11770 11770 D hcy     : MyTextView onTouch ACTION_DOWN</div><div class="line">03-01 00:20:53.052 11770 11770 D hcy     : MyTextView onTouch ACTION_UP</div></pre></td></tr></table></figure>
 <p>发现当把onTouch的返回值改为true后，onTouch的Down和UP照样执行而onClick方法不会执行。</p>
 <h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>1.onTouch方法先于onClick方法执行<br>2.onTouch方法的返回true会阻止事件继续向下传递</p>
