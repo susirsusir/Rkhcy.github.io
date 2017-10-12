@@ -107,7 +107,7 @@
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/initView1.png">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/initView2.png">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/ViewMeasure.png">
-<meta property="og:updated_time" content="2017-10-11T02:32:52.000Z">
+<meta property="og:updated_time" content="2017-10-12T07:32:34.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android View绘制源码分析--Measure">
 <meta name="twitter:description" content="概述在Android中所有布局或者控件都直接或间接继承至View，因此它们拥有相同的绘制机制。以前的学习经验知道View在绘制过程中会经过measure、layout、draw三个流程，measure负责测量View的宽高，layout负责确定View在父容器中的位置，draw负责将View绘制到屏幕上。上篇文章分析到DecorView的绘制从ViewRootImpl类中的performTrave">
@@ -343,6 +343,7 @@
 
       
         <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在Android中所有布局或者控件都直接或间接继承至View，因此它们拥有相同的绘制机制。以前的学习经验知道View在绘制过程中会经过measure、layout、draw三个流程，measure负责测量View的宽高，layout负责确定View在父容器中的位置，draw负责将View绘制到屏幕上。上篇文章分析到DecorView的绘制从ViewRootImpl类中的performTraversals开始，这篇主要分析View绘制流程中的measure部分。</p>
+<a id="more"></a>
 <h2 id="ViewRootImpl-performTraversals"><a href="#ViewRootImpl-performTraversals" class="headerlink" title="ViewRootImpl performTraversals()"></a>ViewRootImpl performTraversals()</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">源码路径:SDK/sources/android-24/android/view/ViewRootImpl.java</div><div class="line">    private void performTraversals() &#123;</div><div class="line">        // cache mView since it is used so much below...</div><div class="line">        final View host = mView;</div><div class="line">        ......</div><div class="line">        WindowManager.LayoutParams lp = mWindowAttributes;</div><div class="line">        ......</div><div class="line">        int childWidthMeasureSpec = getRootMeasureSpec(mWidth, lp.width);</div><div class="line">        int childHeightMeasureSpec = getRootMeasureSpec(mHeight, lp.height);</div><div class="line">        // Ask host how big it wants to be</div><div class="line">        performMeasure(childWidthMeasureSpec, childHeightMeasureSpec);</div><div class="line">        ......</div><div class="line">        performLayout(lp, mWidth, mHeight);</div><div class="line">        ......</div><div class="line">        performDraw();</div><div class="line">        ......</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
 <p>查看这里的getRootMeasureSpec方法</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">源码路径:SDK/sources/android-24/android/view/ViewRootImpl .java</div><div class="line">    /**</div><div class="line">     * Figures out the measure spec for the root view in a window based on it&apos;s</div><div class="line">     * layout params.</div><div class="line">     *</div><div class="line">     * @param windowSize</div><div class="line">     *            The available width or height of the window</div><div class="line">     *</div><div class="line">     * @param rootDimension</div><div class="line">     *            The layout params for one dimension (width or height) of the</div><div class="line">     *            window.</div><div class="line">     *</div><div class="line">     * @return The measure spec to use to measure the root view.</div><div class="line">     */</div><div class="line">    private static int getRootMeasureSpec(int windowSize, int rootDimension) &#123;</div><div class="line">        int measureSpec;</div><div class="line">        switch (rootDimension) &#123;</div><div class="line"></div><div class="line">        case ViewGroup.LayoutParams.MATCH_PARENT:</div><div class="line">            // Window can&apos;t resize. Force root view to be windowSize.</div><div class="line">            measureSpec = MeasureSpec.makeMeasureSpec(windowSize, MeasureSpec.EXACTLY);</div><div class="line">            break;</div><div class="line">        case ViewGroup.LayoutParams.WRAP_CONTENT:</div><div class="line">            // Window can resize. Set max size for root view.</div><div class="line">            measureSpec = MeasureSpec.makeMeasureSpec(windowSize, MeasureSpec.AT_MOST);</div><div class="line">            break;</div><div class="line">        default:</div><div class="line">            // Window wants to be an exact size. Force root view to be that size.</div><div class="line">            measureSpec = MeasureSpec.makeMeasureSpec(rootDimension, MeasureSpec.EXACTLY);</div><div class="line">            break;</div><div class="line">        &#125;</div><div class="line">        return measureSpec;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
@@ -569,7 +570,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -582,7 +583,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

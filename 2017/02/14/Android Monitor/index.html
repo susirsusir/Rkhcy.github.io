@@ -95,13 +95,13 @@
 
 
 
-<meta name="description" content="概述Android Studio 内置了四种性能监测工具Memory Monitor、Network Monitor、CPU Monitor、GPU Monitor，我们可以使用这些工具监测APP的状态，该文简单介绍下这些工具的使用 Memory MonitorMemory Monitor工具主要是用来监测APP的内存分配情况，判断是否存在内存泄漏。连接设备，选择好要监测的APP，如图所示：  A">
+<meta name="description" content="概述Android Studio 内置了四种性能监测工具Memory Monitor、Network Monitor、CPU Monitor、GPU Monitor，我们可以使用这些工具监测APP的状态，该文简单介绍下这些工具的使用">
 <meta name="keywords" content="Android Studio">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android Monitor">
 <meta property="og:url" content="http://rkhcy.github.io/2017/02/14/Android Monitor/index.html">
 <meta property="og:site_name" content="HuYounger&#39;s Note">
-<meta property="og:description" content="概述Android Studio 内置了四种性能监测工具Memory Monitor、Network Monitor、CPU Monitor、GPU Monitor，我们可以使用这些工具监测APP的状态，该文简单介绍下这些工具的使用 Memory MonitorMemory Monitor工具主要是用来监测APP的内存分配情况，判断是否存在内存泄漏。连接设备，选择好要监测的APP，如图所示：  A">
+<meta property="og:description" content="概述Android Studio 内置了四种性能监测工具Memory Monitor、Network Monitor、CPU Monitor、GPU Monitor，我们可以使用这些工具监测APP的状态，该文简单介绍下这些工具的使用">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/memory1.png">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/memory2.png">
@@ -134,10 +134,10 @@
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/cpumonitor2.png">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/captures1.png">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/captures2.png">
-<meta property="og:updated_time" content="2017-09-10T14:36:30.000Z">
+<meta property="og:updated_time" content="2017-10-12T07:31:51.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android Monitor">
-<meta name="twitter:description" content="概述Android Studio 内置了四种性能监测工具Memory Monitor、Network Monitor、CPU Monitor、GPU Monitor，我们可以使用这些工具监测APP的状态，该文简单介绍下这些工具的使用 Memory MonitorMemory Monitor工具主要是用来监测APP的内存分配情况，判断是否存在内存泄漏。连接设备，选择好要监测的APP，如图所示：  A">
+<meta name="twitter:description" content="概述Android Studio 内置了四种性能监测工具Memory Monitor、Network Monitor、CPU Monitor、GPU Monitor，我们可以使用这些工具监测APP的状态，该文简单介绍下这些工具的使用">
 <meta name="twitter:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/memory1.png">
 
 
@@ -370,6 +370,7 @@
 
       
         <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Android Studio 内置了四种性能监测工具Memory Monitor、Network Monitor、CPU Monitor、GPU Monitor，我们可以使用这些工具监测APP的状态，该文简单介绍下这些工具的使用</p>
+<a id="more"></a>
 <h2 id="Memory-Monitor"><a href="#Memory-Monitor" class="headerlink" title="Memory Monitor"></a>Memory Monitor</h2><p>Memory Monitor工具主要是用来监测APP的内存分配情况，判断是否存在内存泄漏。连接设备，选择好要监测的APP，如图所示：</p>
 <p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/memory1.png" style="zoom:50%"></p>
 <p>A：手动触发GC操作<br>B：获取当前的堆栈信息，生成.hprof文件<br>C：内存分配追踪工具，生成.alloc文件<br>D：已使用内存<br>E：剩余可用内存<br>通过与应用交互并在Memory Monitor中观察它是如何影响内存的使用，图表可以为你展示一些潜在的问题:<br>1.频繁的垃圾收集活动使应用运行缓慢。<br>2.应用耗尽内存导致app崩溃.<br>3.潜在的内存泄漏<br>正常情况下，上图中的D区域会随着时间的走势慢慢上升(就算你与APP没有任何交互)，直到E区域被用完，则会触发GC操作，释放内存，周而复始。如果你发现你的应用是静态的，但是E区域的内存很快就被用完了，即频繁的触发GC操作，这时你就应该引起重视，说不定你的代码中就存在着引起内存泄漏的隐患。</p>
@@ -590,7 +591,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -603,7 +604,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

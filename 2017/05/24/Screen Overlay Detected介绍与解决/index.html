@@ -95,13 +95,13 @@
 
 
 
-<meta name="description" content="概述前阵子测试报了一个bug，说是在测试机上安装微信后显示Screen Overlay Detected提示框，然后不知道怎么操作。 现象 如图所示，在第一次安装并打开微信的时候弹出Screen Overlay Detected提示 是什么在Android M以上引入了一个新功能，叫”Draw over other apps”，该功能允许一些apps覆盖在其他应用上，这就意味着这些apps可以在其">
+<meta name="description" content="概述前阵子测试报了一个bug，说是在测试机上安装微信后显示Screen Overlay Detected提示框，然后不知道怎么操作。">
 <meta name="keywords" content="Android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Screen Overlay Detected介绍与解决">
 <meta property="og:url" content="http://rkhcy.github.io/2017/05/24/Screen Overlay Detected介绍与解决/index.html">
 <meta property="og:site_name" content="HuYounger&#39;s Note">
-<meta property="og:description" content="概述前阵子测试报了一个bug，说是在测试机上安装微信后显示Screen Overlay Detected提示框，然后不知道怎么操作。 现象 如图所示，在第一次安装并打开微信的时候弹出Screen Overlay Detected提示 是什么在Android M以上引入了一个新功能，叫”Draw over other apps”，该功能允许一些apps覆盖在其他应用上，这就意味着这些apps可以在其">
+<meta property="og:description" content="概述前阵子测试报了一个bug，说是在测试机上安装微信后显示Screen Overlay Detected提示框，然后不知道怎么操作。">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/989851-8bf178c26e59783f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/400">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/989851-5a5076d0d6d18064.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/400">
@@ -109,10 +109,10 @@
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/989851-60d9bad172b04a68.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/400">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/989851-8a58945b2f0d217a.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/400">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/989851-32ae3a4307790e54.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/400">
-<meta property="og:updated_time" content="2017-09-11T02:09:02.000Z">
+<meta property="og:updated_time" content="2017-10-12T07:27:44.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Screen Overlay Detected介绍与解决">
-<meta name="twitter:description" content="概述前阵子测试报了一个bug，说是在测试机上安装微信后显示Screen Overlay Detected提示框，然后不知道怎么操作。 现象 如图所示，在第一次安装并打开微信的时候弹出Screen Overlay Detected提示 是什么在Android M以上引入了一个新功能，叫”Draw over other apps”，该功能允许一些apps覆盖在其他应用上，这就意味着这些apps可以在其">
+<meta name="twitter:description" content="概述前阵子测试报了一个bug，说是在测试机上安装微信后显示Screen Overlay Detected提示框，然后不知道怎么操作。">
 <meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/989851-8bf178c26e59783f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/400">
 
 
@@ -345,6 +345,7 @@
 
       
         <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>前阵子测试报了一个bug，说是在测试机上安装微信后显示Screen Overlay Detected提示框，然后不知道怎么操作。</p>
+<a id="more"></a>
 <h2 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h2><p><a href="http://upload-images.jianshu.io/upload_images/989851-8bf178c26e59783f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/400" target="_blank" rel="external"><img src="http://upload-images.jianshu.io/upload_images/989851-8bf178c26e59783f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/400" alt="ScreenOverlayDetected.png"></a></p>
 <p>如图所示，在第一次安装并打开微信的时候弹出Screen Overlay Detected提示</p>
 <h2 id="是什么"><a href="#是什么" class="headerlink" title="是什么"></a>是什么</h2><p>在Android M以上引入了一个新功能，叫”Draw over other apps”，该功能允许一些apps覆盖在其他应用上，这就意味着这些apps可以在其他apps的顶部显示一些信息，例如Facebook Messenger使用该功能使它们的聊天覆盖在其他应用上。然而，当具备该功能的应用在前台或后台运行的时候，如果你安装新的应用，此时你的手机会提示”Screen Overlay Detected”，根据提示，你需要前往Settings–&gt;Apps中关闭screen overlay才能正常使用应用。</p>
@@ -505,7 +506,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -518,7 +519,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

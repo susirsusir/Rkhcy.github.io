@@ -95,20 +95,20 @@
 
 
 
-<meta name="description" content="概述Launcher在AndroidManifest.xml中加入了category.home属性，因此开机的时候最先找到这个应用程序加载 1&amp;lt;category android:name=&amp;quot;android.intent.category.HOME&amp;quot; /&amp;gt; 和普通的应用程序一样，先从onCreate()开始分析 准备工作12LauncherAppState.setAp">
+<meta name="description" content="概述Launcher在AndroidManifest.xml中加入了category.home属性，因此开机的时候最先找到这个应用程序加载 1&amp;lt;category android:name=&amp;quot;android.intent.category.HOME&amp;quot; /&amp;gt; 和普通的应用程序一样，先从onCreate()开始分析">
 <meta name="keywords" content="Android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Launcher加载流程">
 <meta property="og:url" content="http://rkhcy.github.io/2016/01/03/Launcher加载流程/index.html">
 <meta property="og:site_name" content="HuYounger&#39;s Note">
-<meta property="og:description" content="概述Launcher在AndroidManifest.xml中加入了category.home属性，因此开机的时候最先找到这个应用程序加载 1&amp;lt;category android:name=&amp;quot;android.intent.category.HOME&amp;quot; /&amp;gt; 和普通的应用程序一样，先从onCreate()开始分析 准备工作12LauncherAppState.setAp">
+<meta property="og:description" content="概述Launcher在AndroidManifest.xml中加入了category.home属性，因此开机的时候最先找到这个应用程序加载 1&amp;lt;category android:name=&amp;quot;android.intent.category.HOME&amp;quot; /&amp;gt; 和普通的应用程序一样，先从onCreate()开始分析">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/launcherdb.PNG">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/LauncherSequence.png">
-<meta property="og:updated_time" content="2017-09-10T13:41:18.000Z">
+<meta property="og:updated_time" content="2017-10-12T07:28:07.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Launcher加载流程">
-<meta name="twitter:description" content="概述Launcher在AndroidManifest.xml中加入了category.home属性，因此开机的时候最先找到这个应用程序加载 1&amp;lt;category android:name=&amp;quot;android.intent.category.HOME&amp;quot; /&amp;gt; 和普通的应用程序一样，先从onCreate()开始分析 准备工作12LauncherAppState.setAp">
+<meta name="twitter:description" content="概述Launcher在AndroidManifest.xml中加入了category.home属性，因此开机的时候最先找到这个应用程序加载 1&amp;lt;category android:name=&amp;quot;android.intent.category.HOME&amp;quot; /&amp;gt; 和普通的应用程序一样，先从onCreate()开始分析">
 <meta name="twitter:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/launcherdb.PNG">
 
 
@@ -343,6 +343,7 @@
         <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><strong>Launcher</strong>在AndroidManifest.xml中加入了<strong>category.home</strong>属性，因此开机的时候最先找到这个应用程序加载</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;category android:name=&quot;android.intent.category.HOME&quot; /&gt;</div></pre></td></tr></table></figure>
 <p>和普通的应用程序一样，先从<strong>onCreate()</strong>开始分析</p>
+<a id="more"></a>
 <h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">LauncherAppState.setApplicationContext(getApplicationContext());</div><div class="line">LauncherAppState app = LauncherAppState.getInstance();</div></pre></td></tr></table></figure>
 <p>这里先获取到<strong>LauncherAppState</strong>的一个实例(单例模式)，在该实例的构造函数中对许多变量进行了初始化同时注册了广播监听</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">mInvariantDeviceProfile = new InvariantDeviceProfile(sContext);//一些不变的设备相关参数管理类，其内部包涵了横竖屏模式的DeviceProfile</div><div class="line">mIconCache = new IconCache(sContext, mInvariantDeviceProfile);//图标缓存类，应用程序icon和title的缓存</div><div class="line">mWidgetCache = new WidgetPreviewLoader(sContext, mIconCache);//小部件缓存</div><div class="line"></div><div class="line">mAppFilter = AppFilter.loadByName(sContext.getString(R.string.app_filter_class));</div><div class="line">mBuildInfo = BuildInfo.loadByName(sContext.getString(R.string.build_info_class));</div><div class="line">mModel = new LauncherModel(this, mIconCache, mAppFilter);//数据处理类，保存桌面状态，提供读写数据库的API，内部类LoaderTask用来初始化桌面</div><div class="line"></div><div class="line">LauncherAppsCompat.getInstance(sContext).addOnAppsChangedCallback(mModel);</div><div class="line"></div><div class="line">// Register intent receivers</div><div class="line">IntentFilter filter = new IntentFilter();</div><div class="line">filter.addAction(Intent.ACTION_LOCALE_CHANGED);//如中英文的切换</div><div class="line">filter.addAction(SearchManager.INTENT_GLOBAL_SEARCH_ACTIVITY_CHANGED);//搜索提供者发生了变化</div><div class="line">filter.addAction(SearchManager.INTENT_ACTION_SEARCHABLES_CHANGED);</div><div class="line">// For handling managed profiles</div><div class="line">filter.addAction(LauncherAppsCompat.ACTION_MANAGED_PROFILE_ADDED);</div><div class="line">filter.addAction(LauncherAppsCompat.ACTION_MANAGED_PROFILE_REMOVED);</div><div class="line"></div><div class="line">sContext.registerReceiver(mModel, filter);</div><div class="line">UserManagerCompat.getInstance(sContext).enableAndResetCache();</div><div class="line"></div><div class="line">filter = new IntentFilter();</div><div class="line">if (Utilities.isUnreadCountEnabled(sContext)) &#123;</div><div class="line">    filter.addAction(LauncherModel.ACTION_UNREAD_CHANGED);//未读广播</div><div class="line">    sContext.registerReceiver(mModel, filter);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
@@ -553,7 +554,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -566,7 +567,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

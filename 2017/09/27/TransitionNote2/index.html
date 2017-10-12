@@ -95,13 +95,13 @@
 
 
 
-<meta name="description" content="概述在上篇笔记中对于Transition的框架和常用的API使用进行了分析，Transition最常用的是在界面过渡方面，本文继续学习Transition在界面过渡上的使用。在界面过渡上，Transition分为不带共享元素的Content Transition和带共享元素的ShareElement Transition。 Content Transition先看下content transiti">
+<meta name="description" content="概述在上篇笔记中对于Transition的框架和常用的API使用进行了分析，Transition最常用的是在界面过渡方面，本文继续学习Transition在界面过渡上的使用。在界面过渡上，Transition分为不带共享元素的Content Transition和带共享元素的ShareElement Transition。">
 <meta name="keywords" content="Android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Transition学习笔记2">
 <meta property="og:url" content="http://rkhcy.github.io/2017/09/27/TransitionNote2/index.html">
 <meta property="og:site_name" content="HuYounger&#39;s Note">
-<meta property="og:description" content="概述在上篇笔记中对于Transition的框架和常用的API使用进行了分析，Transition最常用的是在界面过渡方面，本文继续学习Transition在界面过渡上的使用。在界面过渡上，Transition分为不带共享元素的Content Transition和带共享元素的ShareElement Transition。 Content Transition先看下content transiti">
+<meta property="og:description" content="概述在上篇笔记中对于Transition的框架和常用的API使用进行了分析，Transition最常用的是在界面过渡方面，本文继续学习Transition在界面过渡上的使用。在界面过渡上，Transition分为不带共享元素的Content Transition和带共享元素的ShareElement Transition。">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/transition2_1.gif">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/transition_A_to_B.png">
@@ -113,10 +113,10 @@
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/shared_element.png">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/transition2_6.gif">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/transition2_7.gif">
-<meta property="og:updated_time" content="2017-09-27T11:39:16.000Z">
+<meta property="og:updated_time" content="2017-10-12T07:26:32.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Transition学习笔记2">
-<meta name="twitter:description" content="概述在上篇笔记中对于Transition的框架和常用的API使用进行了分析，Transition最常用的是在界面过渡方面，本文继续学习Transition在界面过渡上的使用。在界面过渡上，Transition分为不带共享元素的Content Transition和带共享元素的ShareElement Transition。 Content Transition先看下content transiti">
+<meta name="twitter:description" content="概述在上篇笔记中对于Transition的框架和常用的API使用进行了分析，Transition最常用的是在界面过渡方面，本文继续学习Transition在界面过渡上的使用。在界面过渡上，Transition分为不带共享元素的Content Transition和带共享元素的ShareElement Transition。">
 <meta name="twitter:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/transition2_1.gif">
 
 
@@ -349,6 +349,7 @@
 
       
         <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在<a href="http://rkhcy.github.io/2017/09/21/TransitionNote/">上篇</a>笔记中对于Transition的框架和常用的API使用进行了分析，Transition最常用的是在界面过渡方面，本文继续学习Transition在界面过渡上的使用。在界面过渡上，Transition分为不带共享元素的Content Transition和带共享元素的ShareElement Transition。</p>
+<a id="more"></a>
 <h3 id="Content-Transition"><a href="#Content-Transition" class="headerlink" title="Content Transition"></a>Content Transition</h3><p>先看下content transition的一个例子，在Google Play Games上的应用：</p>
 <p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/transition2_1.gif" style="zoom:75%"></p>
 <p>在经过学习后我们也可以设计出类似的效果，首先需要了解在界面过渡中涉及到的一些重要方法，从ActivtyA调用startActivity方法唤起ActivityB，到ActivityB按返回键返回ActivityA涉及到与Transition有关的方法</p>
@@ -498,6 +499,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2017/10/12/Java执行顺序/" rel="prev" title="Java执行顺序">
+                Java执行顺序 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -576,7 +581,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -589,7 +594,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

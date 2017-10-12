@@ -95,13 +95,13 @@
 
 
 
-<meta name="description" content="概述最近跟着扔物线的自定义View教程重新复习了一波基础，但是API这种东西如果不用很容易就忘了，趁大脑还没触发GC之前，最好的记忆方式就是撸个Demo出来。iOS上有一款个人很喜欢的简约TODO应用叫极简待办，其中它的番茄时钟交互很适合用来练手。 分析先看下iOS的效果图长啥样  功能  一个默认黑色的圆，一个灰色的圆，随着倒计时减少，灰色圆的弧度越来越大 手指在圆圈内滑动可以调整时间  心路历">
+<meta name="description" content="概述最近跟着扔物线的自定义View教程重新复习了一波基础，但是API这种东西如果不用很容易就忘了，趁大脑还没触发GC之前，最好的记忆方式就是撸个Demo出来。iOS上有一款个人很喜欢的简约TODO应用叫极简待办，其中它的番茄时钟交互很适合用来练手。">
 <meta name="keywords" content="Android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="TomatoView实现">
 <meta property="og:url" content="http://rkhcy.github.io/2017/09/18/TomatoView实现/index.html">
 <meta property="og:site_name" content="HuYounger&#39;s Note">
-<meta property="og:description" content="概述最近跟着扔物线的自定义View教程重新复习了一波基础，但是API这种东西如果不用很容易就忘了，趁大脑还没触发GC之前，最好的记忆方式就是撸个Demo出来。iOS上有一款个人很喜欢的简约TODO应用叫极简待办，其中它的番茄时钟交互很适合用来练手。 分析先看下iOS的效果图长啥样  功能  一个默认黑色的圆，一个灰色的圆，随着倒计时减少，灰色圆的弧度越来越大 手指在圆圈内滑动可以调整时间  心路历">
+<meta property="og:description" content="概述最近跟着扔物线的自定义View教程重新复习了一波基础，但是API这种东西如果不用很容易就忘了，趁大脑还没触发GC之前，最好的记忆方式就是撸个Demo出来。iOS上有一款个人很喜欢的简约TODO应用叫极简待办，其中它的番茄时钟交互很适合用来练手。">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/tomato.gif">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/tomato2.gif">
@@ -109,10 +109,10 @@
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/tomato4.gif">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/tomato5.gif">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/tomato7.gif">
-<meta property="og:updated_time" content="2017-09-18T15:12:20.000Z">
+<meta property="og:updated_time" content="2017-10-12T07:27:02.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="TomatoView实现">
-<meta name="twitter:description" content="概述最近跟着扔物线的自定义View教程重新复习了一波基础，但是API这种东西如果不用很容易就忘了，趁大脑还没触发GC之前，最好的记忆方式就是撸个Demo出来。iOS上有一款个人很喜欢的简约TODO应用叫极简待办，其中它的番茄时钟交互很适合用来练手。 分析先看下iOS的效果图长啥样  功能  一个默认黑色的圆，一个灰色的圆，随着倒计时减少，灰色圆的弧度越来越大 手指在圆圈内滑动可以调整时间  心路历">
+<meta name="twitter:description" content="概述最近跟着扔物线的自定义View教程重新复习了一波基础，但是API这种东西如果不用很容易就忘了，趁大脑还没触发GC之前，最好的记忆方式就是撸个Demo出来。iOS上有一款个人很喜欢的简约TODO应用叫极简待办，其中它的番茄时钟交互很适合用来练手。">
 <meta name="twitter:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/tomato.gif">
 
 
@@ -345,6 +345,7 @@
 
       
         <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>最近跟着<a href="http://hencoder.com/" target="_blank" rel="external">扔物线</a>的自定义View教程重新复习了一波基础，但是API这种东西如果不用很容易就忘了，趁大脑还没触发GC之前，最好的记忆方式就是撸个Demo出来。iOS上有一款个人很喜欢的简约TODO应用叫极简待办，其中它的番茄时钟交互很适合用来练手。</p>
+<a id="more"></a>
 <h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>先看下iOS的效果图长啥样</p>
 <p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/tomato.gif" style="zoom:50%"></p>
 <p>功能</p>
@@ -524,7 +525,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -537,7 +538,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

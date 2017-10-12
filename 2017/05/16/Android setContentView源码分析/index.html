@@ -107,7 +107,7 @@
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/hierarchyviewer.png">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/hierarchyviewer2.jpg">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/relationship.jpg">
-<meta property="og:updated_time" content="2017-09-10T15:39:35.000Z">
+<meta property="og:updated_time" content="2017-10-12T07:32:02.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android setContentView源码分析">
 <meta name="twitter:description" content="概述还记得初学Android的时候啥也不做,点击“Run”就可以看到程序跑起来,不一会界面就显示了”Hello World”。作为初学者只记得通过setContentView把布局文件和MainActivity关联起来,而具体是怎样实现的没有深究,后面在平常开发的时候经常会遇到疑问,例如使用hierarchyviewer工具查看布局层级发现在我们指定的布局外又包裹着其他父布局、经常看到其他地方说到">
@@ -343,6 +343,7 @@
 
       
         <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>还记得初学Android的时候啥也不做,点击“Run”就可以看到程序跑起来,不一会界面就显示了”Hello World”。作为初学者只记得通过setContentView把布局文件和MainActivity关联起来,而具体是怎样实现的没有深究,后面在平常开发的时候经常会遇到疑问,例如使用hierarchyviewer工具查看布局层级发现在我们指定的布局外又包裹着其他父布局、经常看到其他地方说到PhoneWindow是个什么结构？带着这些疑问从头再跟下源码。</p>
+<a id="more"></a>
 <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ul>
 <li>Activity、Window、PhoneWindow、DecorView之间的关系</li>
 <li>hierarchyviewer布局分析</li>
@@ -560,7 +561,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -573,7 +574,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

@@ -95,19 +95,19 @@
 
 
 
-<meta name="description" content="概述在初学Android的时候LayoutInflater是经常用到的一个类，例如在ListView的getView方法，LayoutInflater的作用主要是用来加载布局。上篇在介绍到Activity通过调用setContentView加载布局，通过阅读源码发现其内部还是调用LayoutInflater的inflate方法，继续阅读源码看看内部具体的实现原理。 DemoMainActivity">
+<meta name="description" content="概述在初学Android的时候LayoutInflater是经常用到的一个类，例如在ListView的getView方法，LayoutInflater的作用主要是用来加载布局。上篇在介绍到Activity通过调用setContentView加载布局，通过阅读源码发现其内部还是调用LayoutInflater的inflate方法，继续阅读源码看看内部具体的实现原理。">
 <meta name="keywords" content="Android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android LayoutInflater源码分析">
 <meta property="og:url" content="http://rkhcy.github.io/2017/05/17/Android LayoutInflater源码分析/index.html">
 <meta property="og:site_name" content="HuYounger&#39;s Note">
-<meta property="og:description" content="概述在初学Android的时候LayoutInflater是经常用到的一个类，例如在ListView的getView方法，LayoutInflater的作用主要是用来加载布局。上篇在介绍到Activity通过调用setContentView加载布局，通过阅读源码发现其内部还是调用LayoutInflater的inflate方法，继续阅读源码看看内部具体的实现原理。 DemoMainActivity">
+<meta property="og:description" content="概述在初学Android的时候LayoutInflater是经常用到的一个类，例如在ListView的getView方法，LayoutInflater的作用主要是用来加载布局。上篇在介绍到Activity通过调用setContentView加载布局，通过阅读源码发现其内部还是调用LayoutInflater的inflate方法，继续阅读源码看看内部具体的实现原理。">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/LayoutInflater2.png">
-<meta property="og:updated_time" content="2017-09-11T01:40:11.000Z">
+<meta property="og:updated_time" content="2017-10-12T07:31:42.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android LayoutInflater源码分析">
-<meta name="twitter:description" content="概述在初学Android的时候LayoutInflater是经常用到的一个类，例如在ListView的getView方法，LayoutInflater的作用主要是用来加载布局。上篇在介绍到Activity通过调用setContentView加载布局，通过阅读源码发现其内部还是调用LayoutInflater的inflate方法，继续阅读源码看看内部具体的实现原理。 DemoMainActivity">
+<meta name="twitter:description" content="概述在初学Android的时候LayoutInflater是经常用到的一个类，例如在ListView的getView方法，LayoutInflater的作用主要是用来加载布局。上篇在介绍到Activity通过调用setContentView加载布局，通过阅读源码发现其内部还是调用LayoutInflater的inflate方法，继续阅读源码看看内部具体的实现原理。">
 <meta name="twitter:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/LayoutInflater2.png">
 
 
@@ -340,6 +340,7 @@
 
       
         <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在初学Android的时候LayoutInflater是经常用到的一个类，例如在ListView的getView方法，LayoutInflater的作用主要是用来加载布局。上篇在介绍到Activity通过调用setContentView加载布局，通过阅读源码发现其内部还是调用LayoutInflater的inflate方法，继续阅读源码看看内部具体的实现原理。</p>
+<a id="more"></a>
 <h2 id="Demo"><a href="#Demo" class="headerlink" title="Demo"></a>Demo</h2><p>MainActivity.java</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">public class MainActivity extends AppCompatActivity &#123;</div><div class="line">    private ListView mListView;</div><div class="line">    private MyAdapter mMyAdapter;</div><div class="line">    @Override</div><div class="line">    protected void onCreate(Bundle savedInstanceState) &#123;</div><div class="line">        super.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        mListView = (ListView) findViewById(R.id.listview);</div><div class="line">        mMyAdapter = new MyAdapter(this);</div><div class="line">        mListView.setAdapter(mMyAdapter);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>MyAdapter.java</p>
@@ -551,7 +552,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -564,7 +565,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

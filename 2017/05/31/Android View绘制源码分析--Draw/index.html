@@ -95,19 +95,19 @@
 
 
 
-<meta name="description" content="概述上篇文章分析DecorView的绘制的layout流程，这篇文章继续分析DecorView绘制的第三个阶段，draw流程。 流程分析先看ViewRootImpl的performDraw方法： 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555">
+<meta name="description" content="概述上篇文章分析DecorView的绘制的layout流程，这篇文章继续分析DecorView绘制的第三个阶段，draw流程。">
 <meta name="keywords" content="Android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android View绘制源码分析--Draw">
 <meta property="og:url" content="http://rkhcy.github.io/2017/05/31/Android View绘制源码分析--Draw/index.html">
 <meta property="og:site_name" content="HuYounger&#39;s Note">
-<meta property="og:description" content="概述上篇文章分析DecorView的绘制的layout流程，这篇文章继续分析DecorView绘制的第三个阶段，draw流程。 流程分析先看ViewRootImpl的performDraw方法： 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555">
+<meta property="og:description" content="概述上篇文章分析DecorView的绘制的layout流程，这篇文章继续分析DecorView绘制的第三个阶段，draw流程。">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/draw.png">
-<meta property="og:updated_time" content="2017-09-11T01:52:52.000Z">
+<meta property="og:updated_time" content="2017-10-12T07:32:12.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android View绘制源码分析--Draw">
-<meta name="twitter:description" content="概述上篇文章分析DecorView的绘制的layout流程，这篇文章继续分析DecorView绘制的第三个阶段，draw流程。 流程分析先看ViewRootImpl的performDraw方法： 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555">
+<meta name="twitter:description" content="概述上篇文章分析DecorView的绘制的layout流程，这篇文章继续分析DecorView绘制的第三个阶段，draw流程。">
 <meta name="twitter:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/draw.png">
 
 
@@ -340,6 +340,7 @@
 
       
         <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>上篇文章分析DecorView的绘制的layout流程，这篇文章继续分析DecorView绘制的第三个阶段，draw流程。</p>
+<a id="more"></a>
 <h2 id="流程分析"><a href="#流程分析" class="headerlink" title="流程分析"></a>流程分析</h2><p>先看ViewRootImpl的performDraw方法：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div></pre></td><td class="code"><pre><div class="line">源码路径:SDK/sources/android-24/android/view/ViewRootImpl.java</div><div class="line">    private void performDraw() &#123;</div><div class="line">        if (mAttachInfo.mDisplayState == Display.STATE_OFF &amp;&amp; !mReportNextDraw) &#123;</div><div class="line">            return;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        final boolean fullRedrawNeeded = mFullRedrawNeeded;</div><div class="line">        mFullRedrawNeeded = false;</div><div class="line"></div><div class="line">        mIsDrawing = true;</div><div class="line">        Trace.traceBegin(Trace.TRACE_TAG_VIEW, &quot;draw&quot;);</div><div class="line">        try &#123;</div><div class="line">            draw(fullRedrawNeeded);</div><div class="line">        &#125; finally &#123;</div><div class="line">            mIsDrawing = false;</div><div class="line">            Trace.traceEnd(Trace.TRACE_TAG_VIEW);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        // For whatever reason we didn&apos;t create a HardwareRenderer, end any</div><div class="line">        // hardware animations that are now dangling</div><div class="line">        if (mAttachInfo.mPendingAnimatingRenderNodes != null) &#123;</div><div class="line">            final int count = mAttachInfo.mPendingAnimatingRenderNodes.size();</div><div class="line">            for (int i = 0; i &lt; count; i++) &#123;</div><div class="line">                mAttachInfo.mPendingAnimatingRenderNodes.get(i).endAllAnimators();</div><div class="line">            &#125;</div><div class="line">            mAttachInfo.mPendingAnimatingRenderNodes.clear();</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        if (mReportNextDraw) &#123;</div><div class="line">            mReportNextDraw = false;</div><div class="line"></div><div class="line">            // if we&apos;re using multi-thread renderer, wait for the window frame draws</div><div class="line">            if (mWindowDrawCountDown != null) &#123;</div><div class="line">                try &#123;</div><div class="line">                    mWindowDrawCountDown.await();</div><div class="line">                &#125; catch (InterruptedException e) &#123;</div><div class="line">                    Log.e(mTag, &quot;Window redraw count down interruped!&quot;);</div><div class="line">                &#125;</div><div class="line">                mWindowDrawCountDown = null;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            if (mAttachInfo.mHardwareRenderer != null) &#123;</div><div class="line">                mAttachInfo.mHardwareRenderer.fence();</div><div class="line">                mAttachInfo.mHardwareRenderer.setStopped(mStopped);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            if (mSurfaceHolder != null &amp;&amp; mSurface.isValid()) &#123;</div><div class="line">                mSurfaceHolderCallback.surfaceRedrawNeeded(mSurfaceHolder);</div><div class="line">                SurfaceHolder.Callback callbacks[] = mSurfaceHolder.getCallbacks();</div><div class="line">                if (callbacks != null) &#123;</div><div class="line">                    for (SurfaceHolder.Callback c : callbacks) &#123;</div><div class="line">                        if (c instanceof SurfaceHolder.Callback2) &#123;</div><div class="line">                            ((SurfaceHolder.Callback2)c).surfaceRedrawNeeded(mSurfaceHolder);</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            try &#123;</div><div class="line">                mWindowSession.finishDrawing(mWindow);</div><div class="line">            &#125; catch (RemoteException e) &#123;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
 <p>在13行执行了draw方法，代码如下：</p>
@@ -526,7 +527,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -539,7 +540,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>

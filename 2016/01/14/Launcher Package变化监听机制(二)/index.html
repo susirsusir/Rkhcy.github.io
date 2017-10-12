@@ -95,18 +95,18 @@
 
 
 
-<meta name="description" content="上一篇介绍了当安装应用的时候在桌面和菜单中生成图标的流程,但还是没有找到源头.那么就在源码中继续寻找答案.LauncherModel实现了LauncherAppsCompat.OnAppsChangedCallbackCompat 123456789code path: android/packages/apps/Launcher3/src/com/android/launcher3/compat">
+<meta name="description" content="上一篇介绍了当安装应用的时候在桌面和菜单中生成图标的流程,但还是没有找到源头.那么就在源码中继续寻找答案.">
 <meta name="keywords" content="Android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Launcher Package变化监听机制(二)">
 <meta property="og:url" content="http://rkhcy.github.io/2016/01/14/Launcher Package变化监听机制(二)/index.html">
 <meta property="og:site_name" content="HuYounger&#39;s Note">
-<meta property="og:description" content="上一篇介绍了当安装应用的时候在桌面和菜单中生成图标的流程,但还是没有找到源头.那么就在源码中继续寻找答案.LauncherModel实现了LauncherAppsCompat.OnAppsChangedCallbackCompat 123456789code path: android/packages/apps/Launcher3/src/com/android/launcher3/compat">
+<meta property="og:description" content="上一篇介绍了当安装应用的时候在桌面和菜单中生成图标的流程,但还是没有找到源头.那么就在源码中继续寻找答案.">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2017-09-10T13:52:48.000Z">
+<meta property="og:updated_time" content="2017-10-12T07:28:37.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Launcher Package变化监听机制(二)">
-<meta name="twitter:description" content="上一篇介绍了当安装应用的时候在桌面和菜单中生成图标的流程,但还是没有找到源头.那么就在源码中继续寻找答案.LauncherModel实现了LauncherAppsCompat.OnAppsChangedCallbackCompat 123456789code path: android/packages/apps/Launcher3/src/com/android/launcher3/compat">
+<meta name="twitter:description" content="上一篇介绍了当安装应用的时候在桌面和菜单中生成图标的流程,但还是没有找到源头.那么就在源码中继续寻找答案.">
 
 
 
@@ -337,7 +337,9 @@
       
 
       
-        <p>上一篇介绍了当安装应用的时候在桌面和菜单中生成图标的流程,但还是没有找到源头.那么就在源码中继续寻找答案.<br>LauncherModel实现了LauncherAppsCompat.OnAppsChangedCallbackCompat</p>
+        <p>上一篇介绍了当安装应用的时候在桌面和菜单中生成图标的流程,但还是没有找到源头.那么就在源码中继续寻找答案.</p>
+<a id="more"></a>
+<p>LauncherModel实现了LauncherAppsCompat.OnAppsChangedCallbackCompat</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">code path: android/packages/apps/Launcher3/src/com/android/launcher3/compat/LauncherAppsCompat.java</div><div class="line"></div><div class="line">    public interface OnAppsChangedCallbackCompat &#123;</div><div class="line">        void onPackageRemoved(String packageName, UserHandleCompat user);</div><div class="line">        void onPackageAdded(String packageName, UserHandleCompat user);</div><div class="line">        void onPackageChanged(String packageName, UserHandleCompat user);</div><div class="line">        void onPackagesAvailable(String[] packageNames, UserHandleCompat user, boolean replacing);</div><div class="line">        void onPackagesUnavailable(String[] packageNames, UserHandleCompat user, boolean replacing);</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
 <p>该接口声明了对package变化的一系列操作,LauncherModler是其具体实现。查看LauncherAppsCompat.OnAppsChangedCallbackCompat的调用，发现在LauncherAppsCompatVL的静态内部类WrappedCallback中有使用</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">code path: android/packages/apps/Launcher3/src/com/android/launcher3/compat/LauncherAppsCompatVL.java</div><div class="line"></div><div class="line">private static class WrappedCallback extends LauncherApps.Callback &#123;</div><div class="line">        private LauncherAppsCompat.OnAppsChangedCallbackCompat mCallback;</div><div class="line"></div><div class="line">        public WrappedCallback(LauncherAppsCompat.OnAppsChangedCallbackCompat callback) &#123;</div><div class="line">            mCallback = callback;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public void onPackageRemoved(String packageName, UserHandle user) &#123;</div><div class="line">            mCallback.onPackageRemoved(packageName, UserHandleCompat.fromUser(user));</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public void onPackageAdded(String packageName, UserHandle user) &#123;</div><div class="line">            mCallback.onPackageAdded(packageName, UserHandleCompat.fromUser(user));</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public void onPackageChanged(String packageName, UserHandle user) &#123;</div><div class="line">            mCallback.onPackageChanged(packageName, UserHandleCompat.fromUser(user));</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public void onPackagesAvailable(String[] packageNames, UserHandle user, boolean replacing) &#123;</div><div class="line">            mCallback.onPackagesAvailable(packageNames, UserHandleCompat.fromUser(user), replacing);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public void onPackagesUnavailable(String[] packageNames, UserHandle user,</div><div class="line">                boolean replacing) &#123;</div><div class="line">            mCallback.onPackagesUnavailable(packageNames, UserHandleCompat.fromUser(user),</div><div class="line">                    replacing);</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
@@ -511,7 +513,7 @@
             
               <a href="/archives/">
             
-                <span class="site-state-item-count">26</span>
+                <span class="site-state-item-count">27</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -524,7 +526,7 @@
             
             <div class="site-state-item site-state-tags">
               <a href="/tags/index.html">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">标签</span>
               </a>
             </div>
