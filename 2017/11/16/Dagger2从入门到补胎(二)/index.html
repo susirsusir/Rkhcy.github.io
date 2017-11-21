@@ -95,13 +95,13 @@
 
 
 
-<meta name="description" content="使用继续学习在代码中会看到的标注：@Named、@Qualifier、@Singleton、@Scope。这四个标注包括之前学的@Inject其实不是在dagger的包中，而是javax-inject包中：  经过上篇的学习，结合@Inject、@Component、@Module、@Provides的使用，先看一个例子： City.java 12345678910111213public cla">
+<meta name="description" content="使用继续学习在代码中会看到的标注：@Named、@Qualifier、@Singleton、@Scope。这四个标注包括之前学的@Inject其实不是在dagger的包中，而是javax-inject包中：">
 <meta name="keywords" content="Dagger2">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Dagger2从入门到补胎(二)">
 <meta property="og:url" content="http://rkhcy.github.io/2017/11/16/Dagger2从入门到补胎(二)/index.html">
 <meta property="og:site_name" content="HuYounger&#39;s Note">
-<meta property="og:description" content="使用继续学习在代码中会看到的标注：@Named、@Qualifier、@Singleton、@Scope。这四个标注包括之前学的@Inject其实不是在dagger的包中，而是javax-inject包中：  经过上篇的学习，结合@Inject、@Component、@Module、@Provides的使用，先看一个例子： City.java 12345678910111213public cla">
+<meta property="og:description" content="使用继续学习在代码中会看到的标注：@Named、@Qualifier、@Singleton、@Scope。这四个标注包括之前学的@Inject其实不是在dagger的包中，而是javax-inject包中：">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/dagger2_1_1.png">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/dagger2_1_2.png">
@@ -109,10 +109,10 @@
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/dagger2_02_03.png">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/dagger_qualifiers.png">
 <meta property="og:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/dagger_scopes.png">
-<meta property="og:updated_time" content="2017-11-21T02:31:12.000Z">
+<meta property="og:updated_time" content="2017-11-21T02:35:54.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Dagger2从入门到补胎(二)">
-<meta name="twitter:description" content="使用继续学习在代码中会看到的标注：@Named、@Qualifier、@Singleton、@Scope。这四个标注包括之前学的@Inject其实不是在dagger的包中，而是javax-inject包中：  经过上篇的学习，结合@Inject、@Component、@Module、@Provides的使用，先看一个例子： City.java 12345678910111213public cla">
+<meta name="twitter:description" content="使用继续学习在代码中会看到的标注：@Named、@Qualifier、@Singleton、@Scope。这四个标注包括之前学的@Inject其实不是在dagger的包中，而是javax-inject包中：">
 <meta name="twitter:image" content="http://7xjvg5.com1.z0.glb.clouddn.com/dagger2_1_1.png">
 
 
@@ -346,6 +346,7 @@
       
         <h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>继续学习在代码中会看到的标注：@Named、@Qualifier、@Singleton、@Scope。这四个标注包括之前学的@Inject其实不是在dagger的包中，而是javax-inject包中：</p>
 <p><img src="http://7xjvg5.com1.z0.glb.clouddn.com/dagger2_1_1.png" style="zoom:50%"></p>
+<a id="more"></a>
 <p>经过上篇的学习，结合@Inject、@Component、@Module、@Provides的使用，先看一个例子：</p>
 <p>City.java</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">public class City &#123;</div><div class="line">    private String name;</div><div class="line"></div><div class="line">    public City() &#123;&#125;</div><div class="line"></div><div class="line">    public String show() &#123;</div><div class="line">        return name;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    public void setName(String name) &#123;</div><div class="line">        this.name = name;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
